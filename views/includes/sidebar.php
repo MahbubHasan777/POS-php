@@ -55,6 +55,11 @@ $logout_path = '../logout.php';
                     Reports & AI
                 </a>
             </li>
+            <li style="margin-bottom: 0.5rem;">
+                <a href="<?php echo $role_path; ?>coupons.php" class="<?php echo $current_page == 'coupons.php' ? 'active-link' : ''; ?>" style="display: block; padding: 0.75rem; color: var(--text-gray); text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
+                    Vouchers & Coupons
+                </a>
+            </li>
         <?php elseif($role === 'cashier'): ?>
             <li style="margin-bottom: 0.5rem;">
                 <a href="<?php echo $role_path; ?>dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'active-link' : ''; ?>" style="display: block; padding: 0.75rem; color: var(--text-gray); text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
