@@ -74,6 +74,7 @@ requireRole('cashier');
                 Cashier: <b><?php echo htmlspecialchars($_SESSION['username']); ?></b>
                 <button onclick="showHeldOrders()" style="margin-left: 1rem; padding: 0.5rem; background: var(--secondary); border: none; border-radius: 0.25rem; cursor: pointer; color: white;">Recall Order</button>
                 <a href="return.php" style="margin-left: 0.5rem; padding: 0.5rem; background: #6366f1; border: none; border-radius: 0.25rem; text-decoration: none; color: white; display: inline-block;">Returns</a>
+                <a href="../../logout.php" style="margin-left: 0.5rem; padding: 0.5rem; background: #ef4444; border: none; border-radius: 0.25rem; text-decoration: none; color: white; display: inline-block;">Logout</a>
             </div>
         </div>
 
@@ -101,10 +102,7 @@ requireRole('cashier');
                         <span>Subtotal</span>
                         <span id="subTotal">$0.00</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Tax (5%)</span>
-                        <span id="taxAmount">$0.00</span>
-                    </div>
+
                     <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem;">
                         <span>Total</span>
                         <span id="grandTotal">$0.00</span>
@@ -137,42 +135,55 @@ requireRole('cashier');
 
         // Init
         fetchCart();
+        fetchProducts(''); // Load default products
 
         // Search Listener
         searchInput.addEventListener('input', (e) => {
-            const query = e.target.value;
-            if (query.length < 1) {
-                searchResults.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-gray);">Start typing...</div>';
-                return;
-            }
+            fetchProducts(e.target.value);
+        });
 
-            fetch(`../../api/search_products.php?q=${query}`)
+        function fetchProducts(query) {
+             fetch(`../../api/search_products.php?q=${query}`)
                 .then(res => res.json())
                 .then(data => {
                     searchResults.innerHTML = '';
                     if(data.length === 0) {
-                        searchResults.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">No products found</div>';
+                        searchResults.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-gray);">No products found</div>';
                         return;
                     }
                     data.forEach(prod => {
                         const div = document.createElement('div');
                         div.className = 'product-card';
+                        
+                        let imgHtml = '';
+                        if(prod.image) {
+                            imgHtml = `<img src="../../uploads/${prod.image}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;">`;
+                        } else {
+                            imgHtml = `<div style="width: 100%; height: 120px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; color: #666;">No Img</div>`;
+                        }
+
                         div.innerHTML = `
+                            ${imgHtml}
                             <div style="font-weight: bold; margin-bottom: 0.25rem;">${prod.name}</div>
                             <div style="color: var(--primary);">$${prod.sell_price}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-gray);">Stock: ${prod.stock_qty}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-gray); margin-bottom: 0.5rem;">Stock: ${prod.stock_qty}</div>
+                            <button class="btn-primary" style="width: 100%; padding: 0.5rem; font-size: 0.9rem;">Add to Cart</button>
                         `;
-                        div.onclick = () => addToCart(prod.id);
+                        div.onclick = (e) => {
+                             // Simple click handler
+                             addToCart(prod.id);
+                        };
                         searchResults.appendChild(div);
                     });
                     
-                    // Auto-add if exact barcode match (1 result)
-                    if(data.length === 1 && query === data[0].id.toString()) {
+                    // Auto-add if exact barcode match (1 result) & query is not empty
+                    if(data.length === 1 && query.length > 0 && query === data[0].id.toString()) {
                          addToCart(data[0].id);
                          searchInput.value = ''; // Clear for next scan
+                         fetchProducts(''); // Reset to default view
                     }
                 });
-        });
+        }
 
         function addToCart(id) {
             const formData = new FormData();
@@ -244,12 +255,8 @@ requireRole('cashier');
                 cartItems.appendChild(div);
             });
 
-            const tax = subtotal * 0.05;
-            const grand = subtotal + tax;
-
             document.getElementById('subTotal').innerText = '$' + subtotal.toFixed(2);
-            document.getElementById('taxAmount').innerText = '$' + tax.toFixed(2);
-            document.getElementById('grandTotal').innerText = '$' + grand.toFixed(2);
+            document.getElementById('grandTotal').innerText = '$' + subtotal.toFixed(2);
         }
 
         function processCheckout() {

@@ -30,7 +30,7 @@ function isLoggedIn() {
 
 function requireRole($role) {
     if (!isLoggedIn()) {
-        redirect('/index.php');
+        redirect('/pos/views/login.php');
     }
     if ($_SESSION['role'] !== $role) {
         die("Access Denied");

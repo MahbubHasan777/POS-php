@@ -50,10 +50,7 @@ $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             <span>Subtotal</span>
             <span>$<?php echo number_format($order['total_amount'], 2); ?></span>
         </div>
-        <div class="item">
-            <span>Tax</span>
-            <span>$<?php echo number_format($order['tax_amount'], 2); ?></span>
-        </div>
+
         <div class="item" style="font-weight: bold; font-size: 1.2em;">
             <span>TOTAL</span>
             <span>$<?php echo number_format($order['grand_total'], 2); ?></span>

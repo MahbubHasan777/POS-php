@@ -1,6 +1,6 @@
 <?php
 require_once '../includes/db.php';
-session_start(); // Ensure session is started even if not via db.php (though db.php does it)
+// session_start(); // Handled in db.php
 
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];

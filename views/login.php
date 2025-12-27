@@ -1,3 +1,13 @@
+<?php
+require_once '../includes/db.php';
+
+if (isLoggedIn()) {
+    $role = $_SESSION['role'];
+    if ($role === 'super_admin') redirect('super_admin/dashboard.php');
+    elseif ($role === 'shop_admin') redirect('shop_admin/dashboard.php');
+    elseif ($role === 'cashier') redirect('cashier/dashboard.php');
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
