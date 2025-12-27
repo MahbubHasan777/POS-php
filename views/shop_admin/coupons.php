@@ -77,15 +77,15 @@ $coupons = $db->query("SELECT * FROM coupons WHERE shop_id = ? ORDER BY expiry_d
                 </div>
                 <div>
                     <label class="form-label">Value</label>
-                    <input type="number" step="0.01" name="discount_value" class="form-input" required value="<?php echo $coupon_data['discount_value'] ?? ''; ?>">
+                    <input type="number" step="0.01" name="discount_value" class="form-input" required value="<?php echo isset($coupon_data['discount_value']) ? (float)$coupon_data['discount_value'] : ''; ?>">
                 </div>
                 <div>
                     <label class="form-label">Min Order Amount</label>
-                    <input type="number" step="0.01" name="min_order_amount" class="form-input" value="<?php echo $coupon_data['min_order_amount'] ?? '0'; ?>">
+                    <input type="number" step="0.01" name="min_order_amount" class="form-input" value="<?php echo isset($coupon_data['min_order_amount']) ? (float)$coupon_data['min_order_amount'] : '0'; ?>">
                 </div>
                 <div>
                     <label class="form-label">Max Discount (for %)</label>
-                    <input type="number" step="0.01" name="max_discount_amount" class="form-input" value="<?php echo $coupon_data['max_discount_amount'] ?? '0'; ?>">
+                    <input type="number" step="0.01" name="max_discount_amount" class="form-input" value="<?php echo isset($coupon_data['max_discount_amount']) ? (float)$coupon_data['max_discount_amount'] : '0'; ?>">
                 </div>
                 <div>
                     <label class="form-label">Expiry Date</label>
@@ -124,10 +124,10 @@ $coupons = $db->query("SELECT * FROM coupons WHERE shop_id = ? ORDER BY expiry_d
                         <tr>
                             <td><span style="font-family: monospace; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;"><?php echo htmlspecialchars($c['code']); ?></span></td>
                             <td>
-                                <?php echo $c['discount_type'] == 'fixed' ? 'Taka '.$c['discount_value'] : $c['discount_value'].'%'; ?>
-                                <?php if($c['discount_type'] == 'percent' && $c['max_discount_amount'] > 0) echo " (Max Taka ".$c['max_discount_amount'].")"; ?>
+                                <?php echo $c['discount_type'] == 'fixed' ? 'Taka '.(float)$c['discount_value'] : (float)$c['discount_value'].'%'; ?>
+                                <?php if($c['discount_type'] == 'percent' && $c['max_discount_amount'] > 0) echo " (Max Taka ".(float)$c['max_discount_amount'].")"; ?>
                             </td>
-                            <td>Taka <?php echo $c['min_order_amount']; ?></td>
+                            <td>Taka <?php echo (float)$c['min_order_amount']; ?></td>
                             <td><?php echo $c['expiry_date']; ?></td>
                             <td>
                                 <?php 
