@@ -56,15 +56,45 @@ erDiagram
         int quantity
     }
 
+    HELD_ORDERS {
+        int id PK
+        int shop_id FK
+        json items_json
+    }
+    RETURNS {
+        int id PK
+        int order_id FK
+        int product_id FK
+        decimal refund_amount
+    }
+    NOTIFICATIONS {
+        int id PK
+        int user_id FK
+        string message
+    }
+    SUPPLIERS {
+        int id PK
+        string name
+    }
+    COUPONS {
+        int id PK
+        string code
+    }
+
     SHOPS ||--o{ USERS : "has employees"
     SHOPS }|--|| SUBSCRIPTION_PLANS : "subscribes to"
     SHOPS ||--o{ PRODUCTS : "owns"
     SHOPS ||--o{ CATEGORIES : "defines"
     SHOPS ||--o{ ORDERS : "processes"
+    SHOPS ||--o{ HELD_ORDERS : "tracks"
+    SHOPS ||--o{ RETURNS : "processes"
+    SHOPS ||--o{ SUPPLIERS : "manages"
+    SHOPS ||--o{ COUPONS : "issues"
     ORDERS ||--o{ ORDER_ITEMS : "contains"
     PRODUCTS ||--o{ ORDER_ITEMS : "listed in"
     CATEGORIES ||--o{ PRODUCTS : "classifies"
     BRANDS ||--o{ PRODUCTS : "manufactures"
+    USERS ||--o{ NOTIFICATIONS : "receives"
 ```
 
 ## Class Diagram (Simplified PHP Structure)
