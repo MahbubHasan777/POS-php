@@ -66,6 +66,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 Notifications
             </a>
         </li>
+
+         <li style="margin-bottom: 0.5rem;">
+            <a href="../common/profile.php" class="<?php echo $current_page == 'profile.php' ? 'active-link' : ''; ?>" style="display: block; padding: 0.75rem; color: var(--text-gray); text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
+                Profile & Password
+            </a>
+        </li>
         
         <li style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
             <a href="../logout.php" style="display: block; padding: 0.75rem; color: #ef4444; text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
