@@ -79,7 +79,8 @@ if ($action === 'add') {
     $res = $db->query("SELECT * FROM held_orders WHERE shop_id = ? ORDER BY created_at DESC", [$shop_id], "i");
     $held = [];
     while($row = $res->get_result()->fetch_assoc()) {
-        $row['items_count'] = count(json_decode($row['items_json'], true));
+        $items = json_decode($row['items_json'], true);
+        $row['items_count'] = is_array($items) ? count($items) : 0;
         $held[] = $row;
     }
     echo json_encode(['held' => $held]);
