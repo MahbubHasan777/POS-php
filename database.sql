@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- Insert Default Super Admin (Password: admin123)
 -- Hash generated via password_hash('admin123', PASSWORD_BCRYPT)
 INSERT INTO users (role, username, email, password_hash, full_name) 
-VALUES ('super_admin', 'superadmin', 'admin@pos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Super Administrator');
+VALUES ('super_admin', 'superadmin', 'admin@pos.com', '$2y$12$z8wt4eO9i1F6Bsqh1IjDOODiURIuIF73sh1H2tKLevsxypHw2uVWu', 'Super Administrator');
 
 -- Insert Default Plan
 INSERT INTO subscription_plans (name, price, max_sales) VALUES ('Free Tier', 0.00, 100), ('Pro Tier', 29.99, -1);
