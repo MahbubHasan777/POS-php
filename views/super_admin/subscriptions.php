@@ -61,7 +61,10 @@ $plans = $db->query("SELECT * FROM subscription_plans");
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($plan = $plans->get_result()->fetch_assoc()): ?>
+                        <?php 
+                        $res = $plans->get_result();
+                        while($plan = $res->fetch_assoc()): 
+                        ?>
                         <tr>
                             <td><?php echo htmlspecialchars($plan['name']); ?></td>
                             <td>$<?php echo number_format($plan['price'], 2); ?></td>

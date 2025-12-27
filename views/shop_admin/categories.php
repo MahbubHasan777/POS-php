@@ -66,7 +66,10 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ? ORDER BY id DESC", 
                         <table>
                             <thead><tr><th>Name</th><th>Action</th></tr></thead>
                             <tbody>
-                                <?php while($cat = $categories->get_result()->fetch_assoc()): ?>
+                                <?php 
+                                $cat_res = $categories->get_result();
+                                while($cat = $cat_res->fetch_assoc()): 
+                                ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($cat['name']); ?></td>
                                     <td>
@@ -94,7 +97,10 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ? ORDER BY id DESC", 
                         <table>
                             <thead><tr><th>Name</th><th>Action</th></tr></thead>
                             <tbody>
-                                <?php while($brand = $brands->get_result()->fetch_assoc()): ?>
+                                <?php 
+                                $brand_res = $brands->get_result();
+                                while($brand = $brand_res->fetch_assoc()): 
+                                ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($brand['name']); ?></td>
                                     <td>

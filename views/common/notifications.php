@@ -35,7 +35,10 @@ $notifs = $db->query("SELECT * FROM notifications WHERE user_id = ? ORDER BY cre
                 <?php if($notifs->get_result()->num_rows == 0): ?>
                     <p style="color: var(--text-gray);">No notifications.</p>
                 <?php else: ?>
-                    <?php while($n = $notifs->get_result()->fetch_assoc()): ?>
+                    <?php 
+                    $res = $notifs->get_result();
+                    while($n = $res->fetch_assoc()): 
+                    ?>
                     <div style="background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; border-left: 4px solid <?php echo $n['is_read'] ? 'var(--text-gray)' : 'var(--primary)'; ?>;">
                         <div style="font-weight: bold; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($n['title']); ?></div>
                         <div style="color: var(--text-gray); margin-bottom: 0.5rem;"><?php echo htmlspecialchars($n['message']); ?></div>

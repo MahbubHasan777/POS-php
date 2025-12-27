@@ -65,7 +65,10 @@ $shops = $db->query($sql);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($shop = $shops->get_result()->fetch_assoc()): ?>
+                        <?php 
+                        $res = $shops->get_result();
+                        while($shop = $res->fetch_assoc()): 
+                        ?>
                         <tr>
                             <td>#<?php echo $shop['id']; ?></td>
                             <td><?php echo htmlspecialchars($shop['name']); ?></td>

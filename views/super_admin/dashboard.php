@@ -60,7 +60,8 @@ $users_count = $db->query("SELECT COUNT(*) as count FROM users")->get_result()->
                                                     FROM shops 
                                                     JOIN subscription_plans ON shops.subscription_plan_id = subscription_plans.id 
                                                     ORDER BY created_at DESC LIMIT 5");
-                        while($shop = $recent_shops->get_result()->fetch_assoc()):
+                        $rs = $recent_shops->get_result();
+                        while($shop = $rs->fetch_assoc()):
                         ?>
                         <tr>
                             <td><?php echo htmlspecialchars($shop['name']); ?></td>
