@@ -9,8 +9,11 @@ if (isset($_GET['id'])) {
     $product = $stmt->get_result()->fetch_assoc();
 }
 
-$categories = $db->query("SELECT * FROM categories WHERE shop_id = ?", [$shop_id], "i");
-$brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$shop_id], "i");
+$cat_stmt = $db->query("SELECT * FROM categories WHERE shop_id = ?", [$shop_id], "i");
+$categories_res = $cat_stmt->get_result();
+
+$brand_stmt = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$shop_id], "i");
+$brands_res = $brand_stmt->get_result();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
@@ -69,8 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <select name="category_id" class="form-input">
                             <option value="">Select Category</option>
                             <?php 
-                            $categories->data_seek(0);
-                            while($c = $categories->get_result()->fetch_assoc()): ?>
+                            $categories_res->data_seek(0);
+                            while($c = $categories_res->fetch_assoc()): ?>
                                 <option value="<?php echo $c['id']; ?>" <?php echo ($product['category_id']??'')==$c['id']?'selected':''; ?>>
                                     <?php echo htmlspecialchars($c['name']); ?>
                                 </option>
@@ -82,8 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <select name="brand_id" class="form-input">
                             <option value="">Select Brand</option>
                             <?php 
-                            $brands->data_seek(0);
-                            while($b = $brands->get_result()->fetch_assoc()): ?>
+                            $brands_res->data_seek(0);
+                            while($b = $brands_res->fetch_assoc()): ?>
                                 <option value="<?php echo $b['id']; ?>" <?php echo ($product['brand_id']??'')==$b['id']?'selected':''; ?>>
                                     <?php echo htmlspecialchars($b['name']); ?>
                                 </option>

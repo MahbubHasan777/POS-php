@@ -40,7 +40,10 @@ $suppliers = $db->query("SELECT * FROM suppliers WHERE shop_id = ?", [$shop_id],
                 <table>
                     <thead><tr><th>Name</th><th>Contact Info</th></tr></thead>
                     <tbody>
-                        <?php while($s = $suppliers->get_result()->fetch_assoc()): ?>
+                        <?php 
+                        $res = $suppliers->get_result();
+                        while($s = $res->fetch_assoc()): 
+                        ?>
                         <tr>
                             <td><?php echo htmlspecialchars($s['name']); ?></td>
                             <td><?php echo htmlspecialchars($s['contact_info']); ?></td>

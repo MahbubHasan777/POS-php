@@ -14,7 +14,8 @@ if (isset($_GET['invoice_id'])) {
     if ($order_data) {
         $stmt_items = $db->query("SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?", [$invoice_id], "i");
         $items = [];
-        while ($row = $stmt_items->get_result()->fetch_assoc()) {
+        $items_res = $stmt_items->get_result();
+        while ($row = $items_res->fetch_assoc()) {
             $items[] = $row;
         }
         $order = [

@@ -6,6 +6,10 @@ $shop_id = $_SESSION['shop_id'];
 $search = $_GET['search'] ?? '';
 $filter_cat = $_GET['category'] ?? '';
 
+$filter_brand = $_GET['brand'] ?? '';
+$min_price = $_GET['min_price'] ?? '';
+$max_price = $_GET['max_price'] ?? '';
+
 // Build Query
 $sql = "SELECT p.*, c.name as cat_name, b.name as brand_name 
         FROM products p 
@@ -27,7 +31,21 @@ if ($filter_cat) {
     $params[] = $filter_cat;
     $types .= "i";
 }
-
+if ($filter_brand) {
+    $sql .= " AND p.brand_id = ?";
+    $params[] = $filter_brand;
+    $types .= "i";
+}
+if ($min_price !== '') {
+    $sql .= " AND p.sell_price >= ?";
+    $params[] = $min_price;
+    $types .= "d";
+}
+if ($max_price !== '') {
+    $sql .= " AND p.sell_price <= ?";
+    $params[] = $max_price;
+    $types .= "d";
+}
 $sql .= " ORDER BY p.id DESC";
 $products = $db->query($sql, $params, $types);
 ?>
@@ -49,19 +67,38 @@ $products = $db->query($sql, $params, $types);
             </div>
 
             <!-- Filters -->
-            <form class="form-group" style="display: flex; gap: 1rem; background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem;">
-                <input type="text" name="search" class="form-input" placeholder="Search by name or ID..." value="<?php echo htmlspecialchars($search); ?>">
-                <select name="category" class="form-input">
-                    <option value="">All Categories</option>
+            <form class="form-group" style="display: flex; gap: 0.5rem; background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <input type="text" name="search" class="form-input" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>" style="flex: 1; min-width: 150px;">
+                
+                <select name="category" class="form-input" style="width: auto;">
+                    <option value="">Category</option>
                     <?php 
                     $cats = $db->query("SELECT * FROM categories WHERE shop_id = ?", [$shop_id], "i");
-                    while($c = $cats->get_result()->fetch_assoc()) {
+                    $cat_res = $cats->get_result();
+                    while($c = $cat_res->fetch_assoc()) {
                         $selected = $filter_cat == $c['id'] ? 'selected' : '';
                         echo "<option value='{$c['id']}' $selected>{$c['name']}</option>";
                     }
                     ?>
                 </select>
+
+                <select name="brand" class="form-input" style="width: auto;">
+                    <option value="">Brand</option>
+                    <?php 
+                    $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$shop_id], "i");
+                    $brand_res = $brands->get_result();
+                    while($b = $brand_res->fetch_assoc()) {
+                        $selected = $filter_brand == $b['id'] ? 'selected' : '';
+                        echo "<option value='{$b['id']}' $selected>{$b['name']}</option>";
+                    }
+                    ?>
+                </select>
+
+                <input type="number" name="min_price" class="form-input" placeholder="Min $" style="width: 80px;" value="<?php echo htmlspecialchars($min_price); ?>">
+                <input type="number" name="max_price" class="form-input" placeholder="Max $" style="width: 80px;" value="<?php echo htmlspecialchars($max_price); ?>">
+                
                 <button type="submit" class="btn-primary" style="width: auto;">Filter</button>
+                <a href="products.php" style="color: var(--text-gray); text-decoration: none; display: flex; align-items: center; margin-left: 0.5rem;">Reset</a>
             </form>
 
             <div class="table-container">
@@ -79,7 +116,10 @@ $products = $db->query($sql, $params, $types);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($p = $products->get_result()->fetch_assoc()): ?>
+                        <?php 
+                        $res = $products->get_result();
+                        while($p = $res->fetch_assoc()): 
+                        ?>
                         <tr>
                             <td>
                                 <?php if($p['image']): ?>

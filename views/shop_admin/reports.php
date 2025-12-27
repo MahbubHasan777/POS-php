@@ -16,14 +16,16 @@ $total_revenue = 0;
 $total_profit = 0;
 
 $orders_data = [];
-while($row = $orders->get_result()->fetch_assoc()) {
+$orders_res = $orders->get_result();
+while($row = $orders_res->fetch_assoc()) {
     $orders_data[] = $row;
     $total_revenue += $row['grand_total'];
     
     // Calculate Profit for this order
     // Query items to get buy price vs sell price
     $items = $db->query("SELECT oi.quantity, p.buy_price, p.sell_price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?", [$row['id']], "i");
-    while($item = $items->get_result()->fetch_assoc()) {
+    $items_res = $items->get_result();
+    while($item = $items_res->fetch_assoc()) {
         $profit = ($item['sell_price'] - $item['buy_price']) * $item['quantity'];
         $total_profit += $profit;
     }

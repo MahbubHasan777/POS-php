@@ -11,8 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_staff'])) {
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     
     // Check duplication
-    $check = $db->query("SELECT id FROM users WHERE email = ? OR username = ?", [$email, $username], "ss");
-    if ($check->get_result()->num_rows == 0) {
+    $check_stmt = $db->query("SELECT id FROM users WHERE email = ? OR username = ?", [$email, $username], "ss");
+    $check_res = $check_stmt->get_result();
+    if ($check_res->num_rows == 0) {
         $db->query("INSERT INTO users (shop_id, role, username, email, password_hash, full_name) VALUES (?, 'cashier', ?, ?, ?, ?)", 
             [$shop_id, $username, $email, $password, $name], "issss");
     } else {
@@ -81,7 +82,10 @@ $staff = $db->query("SELECT * FROM users WHERE shop_id = ? AND role = 'cashier' 
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($user = $staff->get_result()->fetch_assoc()): ?>
+                            <?php 
+                            $res = $staff->get_result();
+                            while($user = $res->fetch_assoc()): 
+                            ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($user['full_name']); ?></td>
                                 <td><?php echo htmlspecialchars($user['username']); ?></td>

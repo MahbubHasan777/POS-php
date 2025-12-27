@@ -24,8 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update logic could go here similar to Add
 }
 
-$categories = $db->query("SELECT * FROM categories WHERE shop_id = ? ORDER BY id DESC", [$shop_id], "i");
-$brands = $db->query("SELECT * FROM brands WHERE shop_id = ? ORDER BY id DESC", [$shop_id], "i");
+$cat_stmt = $db->query("SELECT * FROM categories WHERE shop_id = ? ORDER BY id DESC", [$shop_id], "i");
+$categories_res = $cat_stmt->get_result();
+
+$brand_stmt = $db->query("SELECT * FROM brands WHERE shop_id = ? ORDER BY id DESC", [$shop_id], "i");
+$brands_res = $brand_stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,8 +70,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ? ORDER BY id DESC", 
                             <thead><tr><th>Name</th><th>Action</th></tr></thead>
                             <tbody>
                                 <?php 
-                                $cat_res = $categories->get_result();
-                                while($cat = $cat_res->fetch_assoc()): 
+                                while($cat = $categories_res->fetch_assoc()): 
                                 ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($cat['name']); ?></td>
@@ -98,8 +100,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ? ORDER BY id DESC", 
                             <thead><tr><th>Name</th><th>Action</th></tr></thead>
                             <tbody>
                                 <?php 
-                                $brand_res = $brands->get_result();
-                                while($brand = $brand_res->fetch_assoc()): 
+                                while($brand = $brands_res->fetch_assoc()): 
                                 ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($brand['name']); ?></td>

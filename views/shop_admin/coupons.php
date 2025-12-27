@@ -75,7 +75,10 @@ $coupons = $db->query("SELECT * FROM coupons WHERE shop_id = ? ORDER BY expiry_d
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($c = $coupons->get_result()->fetch_assoc()): ?>
+                        <?php 
+                        $res = $coupons->get_result();
+                        while($c = $res->fetch_assoc()): 
+                        ?>
                         <tr>
                             <td><span style="font-family: monospace; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;"><?php echo htmlspecialchars($c['code']); ?></span></td>
                             <td>
