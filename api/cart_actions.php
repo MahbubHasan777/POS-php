@@ -90,8 +90,11 @@ if ($action === 'add') {
     $order = $res->get_result()->fetch_assoc();
     
     if ($order) {
-        $_SESSION['cart'] = json_decode($order['items_json'], true);
-        $db->query("DELETE FROM held_orders WHERE id = ?", [$id], "i");
+        $recovered_cart = json_decode($order['items_json'], true);
+        if (is_array($recovered_cart)) {
+            $_SESSION['cart'] = $recovered_cart;
+            $db->query("DELETE FROM held_orders WHERE id = ?", [$id], "i");
+        }
     }
 }
 
