@@ -1,6 +1,8 @@
 <?php
 require_once '../includes/db.php';
-session_start();
+// session_start(); // Handled in db.php
+error_reporting(0);
+header('Content-Type: application/json');
 
 // Basic auth check inline for API
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'cashier') {
@@ -20,6 +22,7 @@ if (!$order_id || empty($items)) {
 $db->begin_transaction();
 
 try {
+    $total_refund = 0;
     foreach ($items as $prod_id => $qty) {
         $qty = (int)$qty;
         if ($qty <= 0) continue;
@@ -46,6 +49,23 @@ try {
 
         // Update Stock (Increase)
         $db->query("UPDATE products SET stock_qty = stock_qty + ? WHERE id = ?", [$qty, $prod_id], "ii");
+
+        // Update Order Item (Reduce Qty & Subtotal)
+        $new_item_qty = $order_item['quantity'] - $qty;
+        $new_item_subtotal = $order_item['subtotal'] - $refund_amount;
+        $db->query("UPDATE order_items SET quantity = ?, subtotal = ? WHERE id = ?", 
+                   [$new_item_qty, $new_item_subtotal, $order_item['id']], "idi");
+
+        // Update Order (Reduce Total & Grand Total)
+        // We do this inside loop, but efficient way is to sum up and do once. 
+        // For simplicity/safety in transaction, we do it iteratively or sum up.
+        // Let's sum up to avoid multiple writes to same order row.
+        $total_refund += $refund_amount;
+    }
+
+    if(isset($total_refund) && $total_refund > 0) {
+        $db->query("UPDATE orders SET total_amount = total_amount - ?, grand_total = grand_total - ? WHERE id = ?", 
+                   [$total_refund, $total_refund, $order_id], "ddi");
     }
 
     $db->commit();

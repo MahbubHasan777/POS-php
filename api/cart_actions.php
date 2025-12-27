@@ -78,7 +78,8 @@ if ($action === 'add') {
 } elseif ($action === 'list_held') {
     $res = $db->query("SELECT * FROM held_orders WHERE shop_id = ? ORDER BY created_at DESC", [$shop_id], "i");
     $held = [];
-    while($row = $res->get_result()->fetch_assoc()) {
+    $result = $res->get_result();
+    while($row = $result->fetch_assoc()) {
         $items = json_decode($row['items_json'], true);
         $row['items_count'] = is_array($items) ? count($items) : 0;
         $held[] = $row;
@@ -88,7 +89,8 @@ if ($action === 'add') {
 } elseif ($action === 'recall') {
     $id = $_POST['id'];
     $res = $db->query("SELECT * FROM held_orders WHERE id = ? AND shop_id = ?", [$id, $shop_id], "ii");
-    $order = $res->get_result()->fetch_assoc();
+    $result = $res->get_result();
+    $order = $result->fetch_assoc();
     
     if ($order) {
         $recovered_cart = json_decode($order['items_json'], true);
