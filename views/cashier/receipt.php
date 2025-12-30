@@ -1,19 +1,15 @@
 <?php
-require_once '../../includes/db.php';
+require_once '../../models/Order.php';
 requireRole('cashier');
 
 $order_id = $_GET['id'];
 $change = $_GET['change'];
+$orderModel = new Order();
 
-// Fetch Order
-$stmt = $db->query("SELECT * FROM orders WHERE id = ? AND shop_id = ?", [$order_id, $_SESSION['shop_id']], "ii");
-$order = $stmt->get_result()->fetch_assoc();
-
+$order = $orderModel->get($order_id, $_SESSION['shop_id']);
 if(!$order) die("Order not found");
 
-// Fetch Items
-$stmt = $db->query("SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?", [$order_id], "i");
-$items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$items = $orderModel->getItems($order_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +46,10 @@ $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             <span>Subtotal</span>
             <span>$<?php echo number_format($order['total_amount'], 2); ?></span>
         </div>
-
+        <div class="item">
+            <span>Tax</span>
+            <span>$<?php echo number_format($order['tax_amount'], 2); ?></span>
+        </div>
         <div class="item" style="font-weight: bold; font-size: 1.2em;">
             <span>TOTAL</span>
             <span>$<?php echo number_format($order['grand_total'], 2); ?></span>

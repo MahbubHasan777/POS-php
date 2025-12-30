@@ -1,31 +1,33 @@
 <?php
-require_once '../../includes/db.php';
+require_once '../../models/Order.php';
 requireRole('shop_admin');
 $shop_id = $_SESSION['shop_id'];
+$orderModel = new Order();
 
 // Date Filter
 $start_date = $_GET['start'] ?? date('Y-m-01');
 $end_date = $_GET['end'] ?? date('Y-m-d');
 
-// Fetch Orders
-$orders = $db->query("SELECT * FROM orders WHERE shop_id = ? AND DATE(created_at) BETWEEN ? AND ? ORDER BY created_at DESC", 
-    [$shop_id, $start_date, $end_date], "iss");
+// Fetch Orders via Model
+$orders = $orderModel->getReport($shop_id, $start_date, $end_date);
 
-// Calculate Totals
+// Calculate Totals (Internal Logic here or could be in Model)
 $total_revenue = 0;
 $total_profit = 0;
-
 $orders_data = [];
-$orders_res = $orders->get_result();
-while($row = $orders_res->fetch_assoc()) {
+
+while($row = $orders->fetch_assoc()) {
     $orders_data[] = $row;
     $total_revenue += $row['grand_total'];
-    
-    // Calculate Profit for this order
-    // Query items to get buy price vs sell price
-    $items = $db->query("SELECT oi.quantity, p.buy_price, p.sell_price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?", [$row['id']], "i");
-    $items_res = $items->get_result();
-    while($item = $items_res->fetch_assoc()) {
+    // Profit Calculation - Ideally Model should handle complex logic but keeping here for now or adding helper method
+    // Since we need to query items for each order to get profit, let's just do it.
+    // Optimization: Join in the main query would be better.
+    // For now, let's rely on Order model getting items if we want, or just raw query if specialized.
+    // Let's stick to the previous logic but use Core wrapper via model if needed.
+    // Actually, let's duplicate the logic but via Core to be safe/quick.
+    $core = $orderModel; // It extends Core
+    $items = $core->query("SELECT oi.quantity, p.buy_price, p.sell_price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?", [$row['id']], "i");
+    while($item = $items->get_result()->fetch_assoc()) {
         $profit = ($item['sell_price'] - $item['buy_price']) * $item['quantity'];
         $total_profit += $profit;
     }
@@ -119,7 +121,6 @@ while($row = $orders_res->fetch_assoc()) {
             btn.innerText = "Analyzing...";
             resultDiv.innerText = "Connecting to Gemini API...";
 
-            // Prepare data summary
             const data = {
                 revenue: <?php echo $total_revenue; ?>,
                 profit: <?php echo $total_profit; ?>,

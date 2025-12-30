@@ -1,6 +1,10 @@
 <?php
 require_once '../../includes/db.php';
 requireRole('cashier');
+
+// Fetch Filters
+$cats = $db->query("SELECT * FROM categories WHERE shop_id = ?", [$_SESSION['shop_id']], "i")->get_result()->fetch_all(MYSQLI_ASSOC);
+$brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_id']], "i")->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,7 +43,7 @@ requireRole('cashier');
         }
         .search-results {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
             overflow-y: auto;
         }
@@ -81,6 +85,29 @@ requireRole('cashier');
         <div class="pos-grid">
             <!-- Left: Search & Products -->
             <div class="product-area">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <select id="catFilter" class="form-input" style="flex: 1;" onchange="applyFilters()">
+                        <option value="">All Categories</option>
+                        <?php foreach($cats as $c): ?>
+                            <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    
+                    <select id="brandFilter" class="form-input" style="flex: 1;" onchange="applyFilters()">
+                        <option value="">All Brands</option>
+                        <?php foreach($brands as $b): ?>
+                            <option value="<?php echo $b['id']; ?>"><?php echo htmlspecialchars($b['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <select id="sortFilter" class="form-input" style="flex: 1;" onchange="applyFilters()">
+                        <option value="">Sort: Newest</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                        <option value="name_asc">Name: A-Z</option>
+                    </select>
+                </div>
+
                 <input type="text" id="searchInput" class="form-input" placeholder="Scan Barcode or Search Product..." autofocus>
                 
                 <div id="searchResults" class="search-results">
@@ -106,6 +133,16 @@ requireRole('cashier');
                     <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem;">
                         <span>Total</span>
                         <span id="grandTotal">$0.00</span>
+                    </div>
+
+                    <!-- Voucher Section -->
+                    <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem;" id="voucherSection">
+                        <input type="text" id="voucherCode" class="form-input" placeholder="Voucher Code" style="padding: 0.5rem;">
+                        <button onclick="applyVoucher()" class="btn-primary" style="width: auto; padding: 0.5rem 1rem;">Apply</button>
+                    </div>
+                    <div id="appliedVoucher" style="display: none; justify-content: space-between; color: var(--success); margin-bottom: 1rem; background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 4px;">
+                        <span id="voucherName"></span>
+                        <button onclick="removeVoucher()" style="background: none; border: none; color: #ef4444; cursor: pointer;">&times;</button>
                     </div>
                     
                     <button onclick="processCheckout()" class="btn-primary" style="margin-bottom: 0.5rem;">Proceed to Payment</button>
@@ -139,11 +176,19 @@ requireRole('cashier');
 
         // Search Listener
         searchInput.addEventListener('input', (e) => {
-            fetchProducts(e.target.value);
+            applyFilters();
         });
 
+        function applyFilters() {
+            fetchProducts(searchInput.value);
+        }
+
         function fetchProducts(query) {
-             fetch(`../../api/search_products.php?q=${query}`)
+             const cat = document.getElementById('catFilter').value;
+             const brand = document.getElementById('brandFilter').value;
+             const sort = document.getElementById('sortFilter').value;
+
+             fetch(`../../api/search_products.php?q=${query}&category_id=${cat}&brand_id=${brand}&sort=${sort}`)
                 .then(res => res.json())
                 .then(data => {
                     searchResults.innerHTML = '';
@@ -256,7 +301,19 @@ requireRole('cashier');
             });
 
             document.getElementById('subTotal').innerText = '$' + subtotal.toFixed(2);
-            document.getElementById('grandTotal').innerText = '$' + subtotal.toFixed(2);
+            
+            let total = subtotal;
+            if(discount) {
+                document.getElementById('voucherSection').style.display = 'none';
+                document.getElementById('appliedVoucher').style.display = 'flex';
+                document.getElementById('voucherName').innerText = `Voucher (${discount.code}): -$${parseFloat(discount.amount).toFixed(2)}`;
+                total -= parseFloat(discount.amount);
+            } else {
+                document.getElementById('voucherSection').style.display = 'flex';
+                document.getElementById('appliedVoucher').style.display = 'none';
+            }
+            
+            document.getElementById('grandTotal').innerText = '$' + Math.max(0, total).toFixed(2);
         }
 
         function processCheckout() {
@@ -324,10 +381,67 @@ requireRole('cashier');
                 .then(res => res.json())
                 .then(data => {
                     cart = data.cart;
+                    discount = data.discount; // Update global discount
                     renderCart();
                     document.getElementById('heldModal').style.display = 'none';
                 });
         }
+
+        let discount = null; // Global discount state
+
+        function applyVoucher() {
+            const code = document.getElementById('voucherCode').value;
+            if(!code) return;
+            
+            const formData = new FormData();
+            formData.append('action', 'apply_voucher');
+            formData.append('code', code);
+
+            fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        discount = data.discount;
+                        renderCart();
+                        alert("Voucher Applied: -$" + discount.amount);
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        }
+
+        function removeVoucher() {
+            const formData = new FormData();
+            formData.append('action', 'remove_voucher');
+             fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    discount = null;
+                    renderCart();
+                });
+        }
+        
+        // Update other fetch calls to capture discount
+        // We need to override fetchCart, addToCart, etc. to assume they return discount now.
+        // Or simply trust renderCart uses the global 'discount' variable which is updated by these calls if I update them.
+        
+        // Let's ensure fetchCart updates discount
+        const originalFetchCart = fetchCart;
+        fetchCart = function() {
+             fetch('../../api/cart_actions.php')
+                .then(res => res.json())
+                .then(data => {
+                    cart = data.cart;
+                    discount = data.discount;
+                    renderCart();
+                });
+        }
+        
+        // Update addToCart to capture discount (in case re-validation needed, though usually add cleans it?)
+        // Ideally invalidating voucher on cart change is good, but for now let's keep it simple or remove it.
+        // Let's deciding: if cart changes, maybe discount changes (if % or min order)?
+        // For now, let's just re-render. If backend keeps it, we show it.
+
     </script>
 </body>
 </html>

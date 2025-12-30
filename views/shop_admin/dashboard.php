@@ -1,21 +1,24 @@
 <?php
-require_once '../../includes/db.php';
+require_once '../../models/Core.php'; 
+// Ideally we'd have a ShopController or ReportController to aggregate stats. 
+// For now, using direct queries via Core or specialized Model methods makes sense.
+// Let's assume we use Core for ad-hoc dashboard stats to keep it clean if specific model methods don't exist yet.
+requireSameRole: require_once '../../includes/functions.php'; // Ensure functions loaded
 requireRole('shop_admin');
-
 $shop_id = $_SESSION['shop_id'];
+$core = new Core();
 
-// Stats Logic
 // Today's Sales
 $today = date('Y-m-d');
-$sales_stmt = $db->query("SELECT SUM(grand_total) as total FROM orders WHERE shop_id = ? AND DATE(created_at) = ?", [$shop_id, $today], "is");
+$sales_stmt = $core->query("SELECT SUM(grand_total) as total FROM orders WHERE shop_id = ? AND DATE(created_at) = ?", [$shop_id, $today], "is");
 $todays_sales = $sales_stmt->get_result()->fetch_assoc()['total'] ?? 0.00;
 
 // Low Stock Count
-$low_stock_stmt = $db->query("SELECT COUNT(*) as count FROM products WHERE shop_id = ? AND stock_qty <= alert_threshold", [$shop_id], "i");
+$low_stock_stmt = $core->query("SELECT COUNT(*) as count FROM products WHERE shop_id = ? AND stock_qty <= alert_threshold", [$shop_id], "i");
 $low_stock_count = $low_stock_stmt->get_result()->fetch_assoc()['count'];
 
 // Total Products
-$prod_stmt = $db->query("SELECT COUNT(*) as count FROM products WHERE shop_id = ?", [$shop_id], "i");
+$prod_stmt = $core->query("SELECT COUNT(*) as count FROM products WHERE shop_id = ?", [$shop_id], "i");
 $total_products = $prod_stmt->get_result()->fetch_assoc()['count'];
 ?>
 <!DOCTYPE html>
@@ -51,7 +54,6 @@ $total_products = $prod_stmt->get_result()->fetch_assoc()['count'];
                 </div>
             </div>
 
-            <!-- Recent Orders (Placeholder until POS is built) -->
             <h2 style="margin-top: 2rem;">Recent Sales</h2>
             <div class="table-container">
                  <table>
@@ -66,12 +68,17 @@ $total_products = $prod_stmt->get_result()->fetch_assoc()['count'];
                     </thead>
                     <tbody>
                         <?php
-                        $recent_orders = $db->query("SELECT orders.*, users.username as cashier_name FROM orders 
+
+                        // Execute query
+                        $recent_orders = $core->query("SELECT orders.*, users.username as cashier_name FROM orders 
                                                      JOIN users ON orders.cashier_id = users.id 
                                                      WHERE orders.shop_id = ? 
                                                      ORDER BY created_at DESC LIMIT 5", [$shop_id], "i");
-                        if ($recent_orders->get_result()->num_rows > 0):
-                            while($order = $recent_orders->get_result()->fetch_assoc()):
+                        
+                        $res = $recent_orders->get_result(); // Fetch result set once immediately
+
+                        if ($res && $res->num_rows > 0):
+                            while($order = $res->fetch_assoc()):
                         ?>
                         <tr>
                             <td>#<?php echo $order['id']; ?></td>

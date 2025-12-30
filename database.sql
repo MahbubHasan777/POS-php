@@ -1,4 +1,6 @@
 -- Database Schema for SaaS POS System
+CREATE DATABASE IF NOT EXISTS pos;
+USE pos;
 
 CREATE TABLE IF NOT EXISTS subscription_plans (
     id INT AUTO_INCREMENT PRIMARY KEY,

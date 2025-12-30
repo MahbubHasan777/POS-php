@@ -1,35 +1,21 @@
 <?php
-require_once '../../includes/db.php';
+require_once '../../models/Shop.php';
 requireRole('super_admin');
+$shopModel = new Shop();
 
 // Handle Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['suspend_shop'])) {
-        $shopStartId = $_POST['shop_id'];
-        $db->query("UPDATE shops SET status = 'suspended' WHERE id = ?", [$shopStartId], "i");
+        $shopModel->updateStatus($_POST['shop_id'], 'suspended');
     }
     if (isset($_POST['activate_shop'])) {
-        $shopStartId = $_POST['shop_id'];
-        $db->query("UPDATE shops SET status = 'active' WHERE id = ?", [$shopStartId], "i");
+        $shopModel->updateStatus($_POST['shop_id'], 'active');
     }
 }
 
 // Filter Logic
-$filter_status = $_GET['status'] ?? '';
-$sql = "SELECT shops.*, subscription_plans.name as plan_name, users.email as owner_email 
-        FROM shops 
-        JOIN subscription_plans ON shops.subscription_plan_id = subscription_plans.id 
-        LEFT JOIN users ON users.shop_id = shops.id AND users.role = 'shop_admin'";
-
-if ($filter_status) {
-    if ($filter_status === 'suspended') {
-        $sql .= " WHERE shops.status = 'suspended'";
-    } else {
-        $sql .= " WHERE shops.status = 'active'";
-    }
-}
-
-$shops = $db->query($sql);
+$filter_status = $_GET['status'] ?? null;
+$shops = $shopModel->getAll($filter_status);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,8 +52,7 @@ $shops = $db->query($sql);
                     </thead>
                     <tbody>
                         <?php 
-                        $res = $shops->get_result();
-                        while($shop = $res->fetch_assoc()): 
+                        while($shop = $shops->fetch_assoc()): 
                         ?>
                         <tr>
                             <td>#<?php echo $shop['id']; ?></td>

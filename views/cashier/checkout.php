@@ -1,6 +1,6 @@
 <?php
-require_once '../../includes/db.php';
-require_once '../../includes/notifications.php';
+require_once '../../models/Order.php';
+require_once '../../models/Product.php';
 requireRole('cashier');
 
 $cart = $_SESSION['cart'] ?? [];
@@ -8,30 +8,29 @@ if (empty($cart)) redirect('dashboard.php');
 
 $subtotal = 0;
 foreach($cart as $item) $subtotal += $item['price'] * $item['qty'];
-foreach($cart as $item) $subtotal += $item['price'] * $item['qty'];
-$grand_total = $subtotal; // No Tax
+$tax = $subtotal * 0.05;
+$grand_total = $subtotal + $tax;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $orderModel = new Order();
+    $productModel = new Product();
+    
     // Process Payment & Order
     $payment_method = $_POST['payment_method'];
     $amount_given = (float)$_POST['amount_given'];
     $change = $amount_given - $grand_total;
     
-    // Save Order
-    $stmt = $db->query("INSERT INTO orders (shop_id, cashier_id, total_amount, tax_amount, grand_total, payment_method) VALUES (?, ?, ?, ?, ?, ?)",
-        [$_SESSION['shop_id'], $_SESSION['user_id'], $subtotal, 0, $grand_total, $payment_method], "iiddds");
-    $order_id = $db->getLastId();
+    // Create Order
+    $order_id = $orderModel->create($_SESSION['shop_id'], $_SESSION['user_id'], [
+        'sub' => $subtotal,
+        'tax' => $tax,
+        'grand' => $grand_total
+    ], $payment_method);
     
-    // Save Items & Update Stock
+    // Add Items & Update Stock
+    $orderModel->addItems($order_id, $cart);
     foreach($cart as $item) {
-        $line_total = $item['price'] * $item['qty'];
-        $db->query("INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)",
-            [$order_id, $item['id'], $item['qty'], $item['price'], $line_total], "ididd");
-            
-        // Decrease Stock
-        $db->query("UPDATE products SET stock_qty = stock_qty - ? WHERE id = ?", [$item['qty'], $item['id']], "ii");
-        
-        checkStock($item['id']);
+        $productModel->decreaseStock($item['id'], $item['qty']);
     }
     
     // Clear Cart
@@ -51,20 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
         <div class="auth-container" style="max-width: 500px;">
             <h2 style="text-align: center; margin-bottom: 2rem;">Payment</h2>
-            <div style="margin-bottom: 2rem;">
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                    <?php foreach($cart as $item): ?>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 0.75rem;"><?php echo htmlspecialchars($item['name']); ?> <span style="color: var(--text-gray);">x<?php echo $item['qty']; ?></span></td>
-                        <td style="padding: 0.75rem; text-align: right;">$<?php echo number_format($item['price'] * $item['qty'], 2); ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </table>
-                
-                <div style="text-align: center;">
-                    <div style="color: var(--text-gray);">Total Amount Due</div>
-                    <div style="font-size: 3rem; font-weight: 800; color: #34d399;">$<?php echo number_format($grand_total, 2); ?></div>
-                </div>
+            <div style="margin-bottom: 2rem; text-align: center;">
+                <div style="color: var(--text-gray);">Total Amount Due</div>
+                <div style="font-size: 3rem; font-weight: 800; color: #34d399;">$<?php echo number_format($grand_total, 2); ?></div>
             </div>
 
             <form method="POST">

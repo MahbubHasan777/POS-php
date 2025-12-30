@@ -1,16 +1,13 @@
 <?php
-require_once '../../includes/db.php';
+require_once '../../models/Shop.php';
 requireRole('super_admin');
+$shopModel = new Shop();
+$stats = $shopModel->getStats();
 
-// Fetch Stats
-$shops_count = $db->query("SELECT COUNT(*) as count FROM shops")->get_result()->fetch_assoc()['count'];
-$total_revenue = $db->query("SELECT SUM(price) as total FROM subscription_plans 
-                            JOIN shops ON shops.subscription_plan_id = subscription_plans.id")->get_result()->fetch_assoc()['total'] ?? 0;
-// Assuming revenue comes from subscriptions for Super Admin. 
-// If revenue means percentage of sales, we'd calculate differently. 
-// For SaaS, usually it's sub fees.
-// Let's also count total users.
-$users_count = $db->query("SELECT COUNT(*) as count FROM users")->get_result()->fetch_assoc()['count'];
+$shops_count = $stats['shops'];
+$total_revenue = $stats['revenue'];
+// Using raw query via Core for ad-hoc user count
+$users_count = $shopModel->query("SELECT COUNT(*) as count FROM users")->get_result()->fetch_assoc()['count'];
 
 ?>
 <!DOCTYPE html>
@@ -56,12 +53,13 @@ $users_count = $db->query("SELECT COUNT(*) as count FROM users")->get_result()->
                     </thead>
                     <tbody>
                         <?php
-                        $recent_shops = $db->query("SELECT shops.*, subscription_plans.name as plan_name 
+                        // Using raw query for specific JOIN that isn't yet in a Model method
+                        $recent_shops = $shopModel->query("SELECT shops.*, subscription_plans.name as plan_name 
                                                     FROM shops 
                                                     JOIN subscription_plans ON shops.subscription_plan_id = subscription_plans.id 
                                                     ORDER BY created_at DESC LIMIT 5");
-                        $rs = $recent_shops->get_result();
-                        while($shop = $rs->fetch_assoc()):
+                        $res = $recent_shops->get_result();
+                        while($shop = $res->fetch_assoc()):
                         ?>
                         <tr>
                             <td><?php echo htmlspecialchars($shop['name']); ?></td>

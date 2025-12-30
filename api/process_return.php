@@ -1,11 +1,19 @@
 <?php
 require_once __DIR__ . '/../includes/db.php';
 // session_start(); // Handled in db.php
-error_reporting(0);
+error_reporting(E_ALL); // Temporarily enable reporting for logs
+ini_set('display_errors', 0); // Do not echo errors to output
 header('Content-Type: application/json');
+
+function logDebug($msg) {
+    file_put_contents(__DIR__ . '/debug_return.log', date('Y-m-d H:i:s') . " - " . $msg . "\n", FILE_APPEND);
+}
+
+logDebug("Script Started");
 
 // Basic auth check inline for API
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'cashier') {
+    logDebug("Unauthorized access attempt: " . print_r($_SESSION, true));
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
@@ -19,9 +27,10 @@ if (!$order_id || empty($items)) {
     exit;
 }
 
-$db->begin_transaction();
+// $db->begin_transaction(); // Error: Method undefined on wrapper
 
 try {
+    $db->conn->begin_transaction();
     $total_refund = 0;
     foreach ($items as $prod_id => $qty) {
         $qty = (int)$qty;
@@ -68,10 +77,14 @@ try {
                    [$total_refund, $total_refund, $order_id], "ddi");
     }
 
-    $db->commit();
-    echo json_encode(['success' => true]);
-} catch (Exception $e) {
-    $db->rollback();
+    $db->conn->commit();
+    logDebug("Transaction Committed");
+    $resp = json_encode(['success' => true]);
+    if ($resp === false) logDebug("JSON Encode Error: " . json_last_error_msg());
+    echo $resp;
+} catch (Throwable $e) {
+    if (isset($db->conn)) $db->conn->rollback();
+    logDebug("Exception/Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

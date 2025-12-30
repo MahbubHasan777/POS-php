@@ -1,15 +1,14 @@
 <?php
-require_once '../../includes/db.php';
+require_once '../../models/Supplier.php';
 requireRole('shop_admin');
 $shop_id = $_SESSION['shop_id'];
+$supplierModel = new Supplier();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'];
-    $contact = $_POST['contact'];
-    $db->query("INSERT INTO suppliers (shop_id, name, contact_info) VALUES (?, ?, ?)", [$shop_id, $name, $contact], "iss");
+    $supplierModel->create($shop_id, $_POST['name'], $_POST['contact']);
 }
 
-$suppliers = $db->query("SELECT * FROM suppliers WHERE shop_id = ?", [$shop_id], "i");
+$suppliers = $supplierModel->getAll($shop_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,10 +39,7 @@ $suppliers = $db->query("SELECT * FROM suppliers WHERE shop_id = ?", [$shop_id],
                 <table>
                     <thead><tr><th>Name</th><th>Contact Info</th></tr></thead>
                     <tbody>
-                        <?php 
-                        $res = $suppliers->get_result();
-                        while($s = $res->fetch_assoc()): 
-                        ?>
+                        <?php while($s = $suppliers->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($s['name']); ?></td>
                             <td><?php echo htmlspecialchars($s['contact_info']); ?></td>

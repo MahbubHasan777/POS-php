@@ -1,34 +1,28 @@
 <?php
-require_once '../../includes/db.php';
+require_once '../../models/Category.php';
 requireRole('shop_admin');
 $shop_id = $_SESSION['shop_id'];
+$catModel = new Category();
+$brandModel = new Brand();
 
 // Handle Form Submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_category'])) {
-        $name = $_POST['name'];
-        $db->query("INSERT INTO categories (shop_id, name) VALUES (?, ?)", [$shop_id, $name], "is");
+        $catModel->create($shop_id, $_POST['name']);
     }
     if (isset($_POST['add_brand'])) {
-        $name = $_POST['name'];
-        $db->query("INSERT INTO brands (shop_id, name) VALUES (?, ?)", [$shop_id, $name], "is");
+        $brandModel->create($shop_id, $_POST['name']);
     }
     if (isset($_POST['delete_category'])) {
-        $id = $_POST['id'];
-        $db->query("DELETE FROM categories WHERE id = ? AND shop_id = ?", [$id, $shop_id], "ii");
+        $catModel->delete($_POST['id'], $shop_id);
     }
     if (isset($_POST['delete_brand'])) {
-        $id = $_POST['id'];
-        $db->query("DELETE FROM brands WHERE id = ? AND shop_id = ?", [$id, $shop_id], "ii");
+        $brandModel->delete($_POST['id'], $shop_id);
     }
-    // Update logic could go here similar to Add
 }
 
-$cat_stmt = $db->query("SELECT * FROM categories WHERE shop_id = ? ORDER BY id DESC", [$shop_id], "i");
-$categories_res = $cat_stmt->get_result();
-
-$brand_stmt = $db->query("SELECT * FROM brands WHERE shop_id = ? ORDER BY id DESC", [$shop_id], "i");
-$brands_res = $brand_stmt->get_result();
+$categories = $catModel->getAll($shop_id);
+$brands = $brandModel->getAll($shop_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -69,9 +63,7 @@ $brands_res = $brand_stmt->get_result();
                         <table>
                             <thead><tr><th>Name</th><th>Action</th></tr></thead>
                             <tbody>
-                                <?php 
-                                while($cat = $categories_res->fetch_assoc()): 
-                                ?>
+                                <?php while($cat = $categories->fetch_assoc()): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($cat['name']); ?></td>
                                     <td>
@@ -99,9 +91,7 @@ $brands_res = $brand_stmt->get_result();
                         <table>
                             <thead><tr><th>Name</th><th>Action</th></tr></thead>
                             <tbody>
-                                <?php 
-                                while($brand = $brands_res->fetch_assoc()): 
-                                ?>
+                                <?php while($brand = $brands->fetch_assoc()): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($brand['name']); ?></td>
                                     <td>
