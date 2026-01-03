@@ -39,14 +39,21 @@ $prompt = "I run a retail shop. Analyze my sales data from {$input['start']} to 
 
 **Task:**
 Please act as a Senior Retail Analyst. Provide exactly 3 specific, data-driven strategies to improve my business.
+Format your response as a clean **HTML list** (use `<ul>` and `<li>` tags) with `<strong>` for key points. Do not include `<html>` or `<body>` tags.
+
+Example structure:
+<ul>
+  <li><strong>Insight Title:</strong> Explanation...</li>
+</ul>
+
 1. **Sales Driver Analysis**: Why are these specific items selling well? (Analyze the top products).
 2. **Promotional Strategy**: Suggest a concrete 'Bundle Offer' or 'Discount Campaign' based on my top items to cross-sell slower moving goods.
 3. **Profitability & Growth**: Suggest one operational change or up-sell technique to increase the average order value.
 
-Keep the tone professional, motivating, and concise.";
+Keep the tone professional, motivating, and concise. HTML only.";
 
 // Call Gemini API
-$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" . $apiKey;
+$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $apiKey;
 $data = [
     "contents" => [
         [
