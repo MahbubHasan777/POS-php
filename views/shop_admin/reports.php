@@ -192,7 +192,7 @@ $daily_sales = $orderModel->getDailySales($shop_id, date('Y-m-d', strtotime('-7 
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
-                    resultDiv.innerText = data.insight;
+                    resultDiv.innerHTML = data.insight;
                 } else {
                     resultDiv.innerText = "Error: " + data.message;
                 }
