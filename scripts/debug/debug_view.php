@@ -1,6 +1,6 @@
 <?php
 // Debug View to check Session and DB content
-require_once 'includes/db.php';
+require_once '../../includes/db.php';
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 

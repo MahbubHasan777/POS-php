@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db.php';
+require_once '../../includes/db.php';
 
 $sql = "CREATE TABLE IF NOT EXISTS subscription_payments (
     id INT AUTO_INCREMENT PRIMARY KEY,

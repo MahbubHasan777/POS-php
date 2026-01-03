@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db.php';
+require_once '../../includes/db.php';
 
 $sql = "ALTER TABLE shops ADD COLUMN cycle_start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
 

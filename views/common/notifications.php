@@ -32,11 +32,13 @@ $notifs = $db->query("SELECT * FROM notifications WHERE user_id = ? ORDER BY cre
             <h1>Notifications</h1>
             
             <div class="list-group" style="margin-top: 2rem;">
-                <?php if($notifs->get_result()->num_rows == 0): ?>
+                <?php 
+                $res = $notifs->get_result();
+                if($res->num_rows == 0): 
+                ?>
                     <p style="color: var(--text-gray);">No notifications.</p>
                 <?php else: ?>
                     <?php 
-                    $res = $notifs->get_result();
                     while($n = $res->fetch_assoc()): 
                     ?>
                     <div style="background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; border-left: 4px solid <?php echo $n['is_read'] ? 'var(--text-gray)' : 'var(--primary)'; ?>;">

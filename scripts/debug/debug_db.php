@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db.php';
+require_once '../../includes/db.php';
 
 echo "=== USERS ===\n";
 $users = $db->query("SELECT id, username, role, shop_id FROM users");
