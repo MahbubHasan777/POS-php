@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Shop.php';
-session_start();
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? 'login';
@@ -14,7 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $user = $userModel->login($email, $password);
 
-        if ($user) {
+        if ($user === 'suspended') {
+            $error = "Your shop has been suspended. Please contact Super Admin.";
+            include '../views/login.php';
+        } elseif ($user) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['shop_id'] = $user['shop_id'];

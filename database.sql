@@ -154,3 +154,15 @@ VALUES ('super_admin', 'superadmin', 'admin@pos.com', '$2y$12$z8wt4eO9i1F6Bsqh1I
 
 -- Insert Default Plan
 INSERT INTO subscription_plans (name, price, max_sales) VALUES ('Free Tier', 0.00, 100), ('Pro Tier', 29.99, -1);
+
+CREATE TABLE IF NOT EXISTS subscription_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    shop_id INT NOT NULL,
+    plan_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_status ENUM('paid', 'pending', 'failed') DEFAULT 'pending',
+    payment_method VARCHAR(50), 
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE,
+    FOREIGN KEY (plan_id) REFERENCES subscription_plans(id)
+);

@@ -60,21 +60,26 @@ $shops = $shopModel->getAll($filter_status);
                             <td><?php echo htmlspecialchars($shop['owner_email']); ?></td>
                             <td><?php echo htmlspecialchars($shop['plan_name']); ?></td>
                             <td>
-                                <form method="POST" style="display:inline;">
-                                    <input type="hidden" name="shop_id" value="<?php echo $shop['id']; ?>">
-                                    <?php if($shop['status'] === 'active'): ?>
-                                        <button type="submit" name="suspend_shop" style="background:none; border:none; cursor:pointer; color: #f87171;">
-                                            Suspend
-                                        </button>
-                                    <?php else: ?>
-                                        <button type="submit" name="activate_shop" style="background:none; border:none; cursor:pointer; color: #34d399;">
-                                            Activate
-                                        </button>
-                                    <?php endif; ?>
-                                </form>
+                                <span style="padding: 0.25rem 0.5rem; border-radius: 0.25rem; background: <?php echo $shop['status']=='active'?'rgba(16, 185, 129, 0.2)':'rgba(239, 68, 68, 0.2)'; ?>; color: <?php echo $shop['status']=='active'?'#34d399':'#f87171'; ?>">
+                                    <?php echo ucfirst($shop['status']); ?>
+                                </span>
                             </td>
                             <td>
-                                <button onclick="alert('Viewing payment history for ID <?php echo $shop['id']; ?>')" style="background: none; border: 1px solid var(--secondary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer;">History</button>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <form method="POST" style="margin:0;">
+                                        <input type="hidden" name="shop_id" value="<?php echo $shop['id']; ?>">
+                                        <?php if($shop['status'] === 'active'): ?>
+                                            <button type="submit" name="suspend_shop" class="btn-primary" style="background: #ef4444; padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                                                Suspend
+                                            </button>
+                                        <?php else: ?>
+                                            <button type="submit" name="activate_shop" class="btn-primary" style="background: #10b981; padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                                                Activate
+                                            </button>
+                                        <?php endif; ?>
+                                    </form>
+                                    <a href="shop_history.php?shop_id=<?php echo $shop['id']; ?>" class="btn-primary" style="background: none; border: 1px solid var(--secondary); color: white; padding: 0.25rem 0.5rem; font-size: 0.875rem; text-decoration: none; display: inline-block;">History</a>
+                                </div>
                             </td>
                         </tr>
                         <?php endwhile; ?>

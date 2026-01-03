@@ -26,6 +26,15 @@ class Shop extends Core {
         $this->query("UPDATE shops SET status = ? WHERE id = ?", [$status, $id], "si");
     }
 
+    public function getPaymentHistory($shop_id) {
+        $sql = "SELECT sp.*, p.name as plan_name 
+                FROM subscription_payments sp 
+                JOIN subscription_plans p ON sp.plan_id = p.id 
+                WHERE sp.shop_id = ? 
+                ORDER BY sp.payment_date DESC";
+        return $this->query($sql, [$shop_id], "i")->get_result();
+    }
+
     public function getStats($id = null) {
         if ($id) {
             // Specific Shop Stats

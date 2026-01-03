@@ -4,10 +4,20 @@ require_once 'Core.php';
 class User extends Core {
     
     public function login($email, $password) {
-        $result = $this->query("SELECT * FROM users WHERE email = ?", [$email], "s");
+        // Query now includes shop status if shop_id is present
+        $sql = "SELECT u.*, s.status as shop_status 
+                FROM users u 
+                LEFT JOIN shops s ON u.shop_id = s.id 
+                WHERE u.email = ?";
+        
+        $result = $this->query($sql, [$email], "s");
         $user = $result->get_result()->fetch_assoc();
 
         if ($user && password_verify($password, $user['password_hash'])) {
+            // Check suspension logic
+            if ($user['shop_id'] && $user['shop_status'] === 'suspended') {
+                return 'suspended'; // Return specific status to handle in controller
+            }
             return $user;
         }
         return false;
