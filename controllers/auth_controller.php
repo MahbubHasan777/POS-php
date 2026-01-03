@@ -18,7 +18,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Your shop has been suspended. Please contact Super Admin.";
             include '../views/login.php';
         } elseif ($user) {
-            $_SESSION['user_id'] = $user['id'];
+            // Check suspension logic
+            if ($user['shop_id'] && $user['shop_status'] === 'suspended') {
+                $error = "Your shop has been suspended. Please contact Super Admin.";
+                include '../views/login.php';
+            } 
+            // Check Subscription Limit
+            // Limit check moved to POS Checkout
+            else {
+                $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['shop_id'] = $user['shop_id'];
             $_SESSION['username'] = $user['username'];
@@ -29,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirect('../views/shop_admin/dashboard.php');
             } else {
                 redirect('../views/cashier/dashboard.php');
+            }
             }
         } else {
             $error = "Invalid email or password";

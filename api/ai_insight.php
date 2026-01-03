@@ -12,12 +12,38 @@ if (!$apiKey || $apiKey === 'your_generic_key') {
     exit;
 }
 
-$prompt = "I run a retail shop. Here is my sales data from {$input['start']} to {$input['end']}: 
-Total Revenue: \${$input['revenue']}
-Total Profit: \${$input['profit']}
-Total Orders: {$input['orders']}
+// Format Top Items
+$topItemsStr = "";
+foreach ($input['top_items'] as $item) {
+    $topItemsStr .= "- {$item['name']}: {$item['total_qty']} sold (\${$item['total_revenue']})\n";
+}
 
-Please provide 3 concise tips to increase my sales and profitability based on this data. Keep it professional.";
+// Format Daily Trend
+$trendStr = "";
+foreach ($input['daily_sales'] as $day) {
+    $trendStr .= "- {$day['date']}: \${$day['revenue']}\n";
+}
+
+$prompt = "I run a retail shop. Analyze my sales data from {$input['start']} to {$input['end']}:
+
+**Performance Overview:**
+- Total Revenue: \${$input['revenue']}
+- Total Profit: \${$input['profit']}
+- Total Orders: {$input['orders']}
+
+**Top Selling Products:**
+{$topItemsStr}
+
+**Recent Daily Sales Trend:**
+{$trendStr}
+
+**Task:**
+Please act as a Senior Retail Analyst. Provide exactly 3 specific, data-driven strategies to improve my business.
+1. **Sales Driver Analysis**: Why are these specific items selling well? (Analyze the top products).
+2. **Promotional Strategy**: Suggest a concrete 'Bundle Offer' or 'Discount Campaign' based on my top items to cross-sell slower moving goods.
+3. **Profitability & Growth**: Suggest one operational change or up-sell technique to increase the average order value.
+
+Keep the tone professional, motivating, and concise.";
 
 // Call Gemini API
 $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" . $apiKey;
@@ -46,7 +72,12 @@ if ($httpCode === 200) {
     $insight = $result['candidates'][0]['content']['parts'][0]['text'] ?? "Could not generate insight.";
     echo json_encode(['success' => true, 'insight' => $insight]);
 } else {
-    // Fallback for demo if API fails or quota exceeded
-    echo json_encode(['success' => true, 'insight' => "Based on your revenue of \${$input['revenue']}, consider bundling slow-moving items with popular ones. Increasing average order value could boost your profit of \${$input['profit']}."]);
+    // Return actual error for debugging
+    $error = curl_error($ch);
+    $responseBody = strip_tags($response); // basic security
+    echo json_encode([
+        'success' => false, 
+        'message' => "Gemini API Failed (HTTP $httpCode). Error: $error. Response: $responseBody"
+    ]);
 }
 ?>

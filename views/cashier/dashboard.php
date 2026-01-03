@@ -373,6 +373,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
         }
 
         function recallOrder(id) {
+            console.log("Recalling Order ID:", id);
             const formData = new FormData();
             formData.append('action', 'recall');
             formData.append('id', id);
@@ -380,10 +381,19 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
             fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
-                    cart = data.cart;
-                    discount = data.discount; // Update global discount
-                    renderCart();
-                    document.getElementById('heldModal').style.display = 'none';
+                    console.log("Recall Response:", data);
+                    if (data.success) {
+                        cart = data.cart;
+                        discount = data.discount; // Update global discount
+                        renderCart();
+                        document.getElementById('heldModal').style.display = 'none';
+                    } else {
+                        alert("Failed to recall order. It may have been removed or ID is invalid.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error processing recall.");
                 });
         }
 

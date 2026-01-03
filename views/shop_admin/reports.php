@@ -9,9 +9,14 @@ $start_date = $_GET['start'] ?? date('Y-m-01');
 $end_date = $_GET['end'] ?? date('Y-m-d');
 
 // Fetch Orders via Model
-$orders = $orderModel->getReport($shop_id, $start_date, $end_date);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['return_order'])) {
+    $orderModel->returnOrder($_POST['order_id'], $shop_id);
+    $success = "Order #{$_POST['order_id']} returned and stock restored."; // Simple feedback
+}
 
-// Calculate Totals (Internal Logic here or could be in Model)
+$orders = $orderModel->getReportWithProfit($shop_id, $start_date, $end_date);
+
+// Calculate Totals
 $total_revenue = 0;
 $total_profit = 0;
 $orders_data = [];
@@ -19,19 +24,12 @@ $orders_data = [];
 while($row = $orders->fetch_assoc()) {
     $orders_data[] = $row;
     $total_revenue += $row['grand_total'];
-    // Profit Calculation - Ideally Model should handle complex logic but keeping here for now or adding helper method
-    // Since we need to query items for each order to get profit, let's just do it.
-    // Optimization: Join in the main query would be better.
-    // For now, let's rely on Order model getting items if we want, or just raw query if specialized.
-    // Let's stick to the previous logic but use Core wrapper via model if needed.
-    // Actually, let's duplicate the logic but via Core to be safe/quick.
-    $core = $orderModel; // It extends Core
-    $items = $core->query("SELECT oi.quantity, p.buy_price, p.sell_price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?", [$row['id']], "i");
-    while($item = $items->get_result()->fetch_assoc()) {
-        $profit = ($item['sell_price'] - $item['buy_price']) * $item['quantity'];
-        $total_profit += $profit;
-    }
+    $total_profit += $row['profit'] ?? 0;
 }
+
+$best_seller = $orderModel->getBestSellingItem($shop_id, $start_date, $end_date);
+$top_items = $orderModel->getTopSellingItems($shop_id, $start_date, $end_date, 5);
+$daily_sales = $orderModel->getDailySales($shop_id, date('Y-m-d', strtotime('-7 days')), date('Y-m-d'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,6 +70,11 @@ while($row = $orders->fetch_assoc()) {
                     <h3>Orders Count</h3>
                     <div class="stat-value"><?php echo count($orders_data); ?></div>
                 </div>
+                <div class="stat-card">
+                    <h3>Best Selling Item</h3>
+                    <div class="stat-value" style="font-size: 1.5rem; color: var(--primary);"><?php echo htmlspecialchars($best_seller['name']); ?></div>
+                    <small><?php echo $best_seller['total_qty']; ?> sold</small>
+                </div>
             </div>
 
             <!-- AI Section -->
@@ -86,8 +89,12 @@ while($row = $orders->fetch_assoc()) {
                 <div id="aiResult" style="margin-top: 1rem; white-space: pre-wrap; line-height: 1.6;"></div>
             </div>
 
-            <h2 style="margin-top: 2rem;">Order History</h2>
             <div class="table-container">
+                <?php if(isset($success)): ?>
+                    <div style="background: rgba(52,211,153,0.1); color: #34d399; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                        <?php echo $success; ?>
+                    </div>
+                <?php endif; ?>
                 <table>
                     <thead>
                         <tr>
@@ -95,15 +102,25 @@ while($row = $orders->fetch_assoc()) {
                             <th>Date</th>
                             <th>Cashier</th>
                             <th>Total</th>
+                            <th>Profit</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach($orders_data as $row): ?>
                         <tr>
                             <td>#<?php echo $row['id']; ?></td>
-                            <td><?php echo $row['created_at']; ?></td>
-                            <td>User #<?php echo $row['cashier_id']; ?></td>
+                            <td><?php echo date('M d, H:i', strtotime($row['created_at'])); ?></td>
+                            <td><?php echo htmlspecialchars($row['cashier_name']); ?></td>
                             <td>$<?php echo $row['grand_total']; ?></td>
+                            <td style="color: #34d399;">$<?php echo number_format($row['profit'] ?? 0, 2); ?></td>
+                            <td>
+                                <button onclick="showDetails(<?php echo $row['id']; ?>)" class="btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: auto;">Details</button>
+                                <form method="POST" style="display: inline;" onsubmit="return confirm('Return this order? Stock will be restored.');">
+                                    <input type="hidden" name="order_id" value="<?php echo $row['id']; ?>">
+                                    <button type="submit" name="return_order" style="color: #ef4444; background: none; border: none; cursor: pointer; margin-left: 0.5rem;">Return</button>
+                                </form>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -112,7 +129,41 @@ while($row = $orders->fetch_assoc()) {
         </div>
     </div>
 
+    <!-- Details Modal -->
+    <div id="detailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
+        <div style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; width: 500px; max-width: 90%;">
+            <h2 style="margin-top: 0;">Order Details</h2>
+            <div id="modalContent">Loading...</div>
+            <button onclick="document.getElementById('detailsModal').style.display='none'" class="btn-primary" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
+
     <script>
+        function showDetails(id) {
+            const modal = document.getElementById('detailsModal');
+            const content = document.getElementById('modalContent');
+            modal.style.display = 'flex';
+            content.innerHTML = 'Loading...';
+            
+            fetch('../../api/get_order_details.php?id=' + id)
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    let html = '<table style="width:100%; text-align: left;"><thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead><tbody>';
+                    data.items.forEach(item => {
+                        html += `<tr>
+                            <td>${item.name}</td>
+                            <td>${item.quantity}</td>
+                            <td>$${item.unit_price}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    content.innerHTML = html;
+                } else {
+                    content.innerHTML = 'Error loading details.';
+                }
+            });
+        }
         function fetchAiInsights() {
             const btn = document.getElementById('askAiBtn');
             const resultDiv = document.getElementById('aiResult');
@@ -126,7 +177,11 @@ while($row = $orders->fetch_assoc()) {
                 profit: <?php echo $total_profit; ?>,
                 orders: <?php echo count($orders_data); ?>,
                 start: '<?php echo $start_date; ?>',
-                end: '<?php echo $end_date; ?>'
+                end: '<?php echo $end_date; ?>',
+                best_seller: '<?php echo addslashes($best_seller['name']); ?>',
+                best_seller_qty: <?php echo $best_seller['total_qty']; ?>,
+                top_items: <?php echo json_encode($top_items); ?>,
+                daily_sales: <?php echo json_encode($daily_sales); ?>
             };
 
             fetch('../../api/ai_insight.php', {

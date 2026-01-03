@@ -1,7 +1,11 @@
 <?php
 require_once '../../models/Order.php';
 require_once '../../models/Product.php';
+require_once '../../models/Shop.php';
 requireRole('cashier');
+
+$shopModel = new Shop();
+$limitExceeded = !$shopModel->checkSubscriptionLimit($_SESSION['shop_id']);
 
 $cart = $_SESSION['cart'] ?? [];
 if (empty($cart)) redirect('dashboard.php');
@@ -12,6 +16,9 @@ $tax = $subtotal * 0.05;
 $grand_total = $subtotal + $tax;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($limitExceeded) {
+        die("Sales limit exceeded. Cannot process order.");
+    }
     $orderModel = new Order();
     $productModel = new Product();
     
@@ -55,6 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div style="font-size: 3rem; font-weight: 800; color: #34d399;">$<?php echo number_format($grand_total, 2); ?></div>
             </div>
 
+            <?php if($limitExceeded): ?>
+                <div style="text-align: center; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 2rem; border-radius: 0.5rem; border: 1px solid #ef4444;">
+                    <h3 style="margin-bottom: 1rem;">Sales Limit Exceeded</h3>
+                    <p style="margin-bottom: 2rem;">Your shop has reached its sales limit for the current subscription plan. Please contact your administrator to upgrade or renew.</p>
+                    <a href="dashboard.php" class="btn-primary" style="background: var(--text-gray); text-decoration: none;">Back to Dashboard</a>
+                </div>
+            <?php else: ?>
             <form method="POST">
                 <div class="form-group">
                     <label class="form-label">Payment Method</label>
@@ -75,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn-primary" style="flex: 2;">Confirm Payment</button>
                 </div>
             </form>
+            <?php endif; ?>
         </div>
     </div>
 </body>

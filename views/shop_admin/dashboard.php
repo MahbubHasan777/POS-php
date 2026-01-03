@@ -20,6 +20,10 @@ $low_stock_count = $low_stock_stmt->get_result()->fetch_assoc()['count'];
 // Total Products
 $prod_stmt = $core->query("SELECT COUNT(*) as count FROM products WHERE shop_id = ?", [$shop_id], "i");
 $total_products = $prod_stmt->get_result()->fetch_assoc()['count'];
+
+require_once '../../models/Shop.php';
+$shopModel = new Shop();
+$subStats = $shopModel->getStats($shop_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,6 +55,18 @@ $total_products = $prod_stmt->get_result()->fetch_assoc()['count'];
                 <div class="stat-card">
                     <h3>Total Products</h3>
                     <div class="stat-value"><?php echo $total_products; ?></div>
+                </div>
+                <div class="stat-card" style="border: 1px solid var(--primary);">
+                    <h3>Subscription Usage (<?php echo $subStats['plan_name']; ?>)</h3>
+                    <div class="stat-value" style="font-size: 1.5rem;">
+                        <?php echo $subStats['current_sales']; ?> / <?php echo $subStats['max_sales'] == -1 ? '&infin;' : $subStats['max_sales']; ?> Sales
+                    </div>
+                    <?php if($subStats['max_sales'] != -1): ?>
+                        <div style="width: 100%; background: #e5e7eb; height: 6px; border-radius: 3px; margin-top: 0.5rem;">
+                            <div style="width: <?php echo min(100, ($subStats['current_sales'] / $subStats['max_sales']) * 100); ?>%; background: var(--primary); height: 100%; border-radius: 3px;"></div>
+                        </div>
+                    <?php endif; ?>
+                    <a href="payment.php" style="display: block; margin-top: 0.5rem; color: var(--primary); text-decoration: none; font-weight: 600;">Upgrade / Renew &rarr;</a>
                 </div>
             </div>
 

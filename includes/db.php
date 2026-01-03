@@ -22,6 +22,10 @@ class Database {
                 throw new Exception($this->conn->connect_error);
             }
             $this->conn->set_charset("utf8");
+            
+            // Set Timezone to +06:00 (Bangladesh Standard Time as per user context)
+            date_default_timezone_set('Asia/Dhaka'); 
+            $this->conn->query("SET time_zone = '+06:00'");
         } catch (Exception $e) {
             die("<div style='font-family: sans-serif; text-align: center; padding: 50px;'>
                 <h1 style='color: #ef4444;'>Database Connection Failed</h1>

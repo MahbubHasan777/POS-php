@@ -70,5 +70,113 @@ if ($action === 'add') {
     $_SESSION['cart'] = [];
 }
 
-echo json_encode(['cart' => $_SESSION['cart']]);
+elseif ($action === 'apply_voucher') {
+    require_once '../models/Coupon.php';
+    $couponModel = new Coupon();
+    $code = $_POST['code'];
+    
+    // Fetch coupon
+    $coupon = $couponModel->query("SELECT * FROM coupons WHERE shop_id = ? AND code = ? AND expiry_date >= CURDATE()", [$shop_id, $code], "is")->get_result()->fetch_assoc();
+    
+    $cart_total = 0;
+    foreach ($_SESSION['cart'] as $item) $cart_total += $item['price'] * $item['qty'];
+
+    if (!$coupon) {
+        echo json_encode(['success' => false, 'message' => 'Invalid or Expired Coupon']);
+        exit;
+    }
+    
+    if ($cart_total < $coupon['min_order_amount']) {
+        echo json_encode(['success' => false, 'message' => "Order must be at least $" . $coupon['min_order_amount']]);
+        exit;
+    }
+
+    // Calculate Discount
+    $discount_amount = 0;
+    if ($coupon['discount_type'] === 'fixed') {
+        $discount_amount = $coupon['discount_value'];
+    } else {
+        $discount_amount = ($cart_total * $coupon['discount_value']) / 100;
+        if ($coupon['max_discount_amount'] > 0) {
+            $discount_amount = min($discount_amount, $coupon['max_discount_amount']);
+        }
+    }
+    
+    $_SESSION['discount'] = [
+        'code' => $code,
+        'amount' => $discount_amount
+    ];
+    
+    echo json_encode([
+        'success' => true,
+        'discount' => $_SESSION['discount'],
+        'cart' => $_SESSION['cart']
+    ]);
+    exit;
+
+} elseif ($action === 'remove_voucher') {
+    unset($_SESSION['discount']);
+    echo json_encode([
+        'success' => true,
+        'discount' => null,
+        'cart' => $_SESSION['cart']
+    ]);
+    exit;
+
+} elseif ($action === 'hold') {
+    if (!isset($_SESSION['held_orders'])) $_SESSION['held_orders'] = [];
+    
+    $cart = $_SESSION['cart'];
+    if (empty($cart)) {
+        echo json_encode(['success' => false, 'message' => 'Cart is empty', 'cart' => []]);
+        exit;
+    }
+
+    $customer = $_POST['customer'] ?? 'Walk-in';
+    $held_id = time(); // Simple ID based on timestamp
+    
+    $_SESSION['held_orders'][] = [
+        'id' => $held_id,
+        'customer_name' => $customer,
+        'cart' => $cart,
+        'items_count' => count($cart),
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+    
+    $_SESSION['cart'] = []; // Clear current cart
+    echo json_encode(['success' => true, 'cart' => []]);
+    exit;
+
+} elseif ($action === 'list_held') {
+    $held = $_SESSION['held_orders'] ?? [];
+    echo json_encode(['held' => array_values($held)]);
+    exit;
+
+} elseif ($action === 'recall') {
+    $id = $_POST['id'];
+    $held_orders = $_SESSION['held_orders'] ?? [];
+    $found = false;
+    
+    foreach ($held_orders as $key => $order) {
+        if ($order['id'] == $id) {
+            $_SESSION['cart'] = $order['cart']; // Restore cart
+            unset($_SESSION['held_orders'][$key]); // Remove from held list
+            $found = true;
+            break;
+        }
+    }
+    
+    // Re-index array
+    $_SESSION['held_orders'] = array_values($_SESSION['held_orders']);
+    
+    echo json_encode([
+        'success' => $found, 
+        'cart' => $_SESSION['cart'],
+        'discount' => $_SESSION['discount'] ?? null
+    ]);
+    exit;
+}
+
+$discount = $_SESSION['discount'] ?? null;
+echo json_encode(['cart' => $_SESSION['cart'], 'discount' => $discount]);
 ?>

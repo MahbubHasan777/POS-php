@@ -25,7 +25,7 @@ $logout_path = '../logout.php';
                 </a>
             </li>
             <li style="margin-bottom: 0.5rem;">
-                <a href="<?php echo $role_path; ?>subscriptions.php" class="<?php echo $current_page == 'subscriptions.php' ? 'active-link' : ''; ?>" style="display: block; padding: 0.75rem; color: var(--text-gray); text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
+                <a href="<?php echo $role_path; ?>plans.php" class="<?php echo $current_page == 'plans.php' ? 'active-link' : ''; ?>" style="display: block; padding: 0.75rem; color: var(--text-gray); text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
                     Subscription Plans
                 </a>
             </li>
@@ -84,8 +84,12 @@ $logout_path = '../logout.php';
                 Profile & Password
             </a>
         </li>
-        
-        <li style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                <li style="margin-bottom: 0.5rem;">
+                <a href="<?php echo $role_path; ?>staff.php" class="<?php echo $current_page == 'staff.php' ? 'active-link' : ''; ?>" style="display: block; padding: 0.75rem; color: var(--text-gray); text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
+                    Manage Staff
+                </a>
+            </li>
+            <li style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
             <a href="<?php echo $logout_path; ?>" style="display: block; padding: 0.75rem; color: #ef4444; text-decoration: none; border-radius: 0.5rem; transition: all 0.2s;">
                 Logout
             </a>

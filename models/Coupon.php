@@ -10,5 +10,17 @@ class Coupon extends Core {
         $this->query("INSERT INTO coupons (shop_id, code, discount_type, discount_value, min_order_amount, max_discount_amount, expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [$data['shop_id'], $data['code'], $data['type'], $data['value'], $data['min'], $data['max'], $data['expiry']], "issddds");
     }
+    public function getById($id) {
+        return $this->query("SELECT * FROM coupons WHERE id = ?", [$id], "i")->get_result()->fetch_assoc();
+    }
+
+    public function update($id, $data) {
+        $this->query("UPDATE coupons SET code = ?, discount_type = ?, discount_value = ?, min_order_amount = ?, max_discount_amount = ?, expiry_date = ? WHERE id = ?",
+        [$data['code'], $data['type'], $data['value'], $data['min'], $data['max'], $data['expiry'], $id], "ssdddsi");
+    }
+
+    public function delete($id) {
+        $this->query("DELETE FROM coupons WHERE id = ?", [$id], "i");
+    }
 }
 ?>
