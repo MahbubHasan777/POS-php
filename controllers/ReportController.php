@@ -32,10 +32,6 @@ class ReportController {
     }
 
     private function calculateOrderProfit($order_id) {
-        // Using OrderModel's Inherited Core methods if possible, or instantiating Core
-        // Since $orderModel is a Core, we can misuse it or use a public query method if available.
-        // Core::query is now public.
-        
         $items = $this->orderModel->query(
             "SELECT oi.quantity, p.buy_price, p.sell_price 
              FROM order_items oi 
