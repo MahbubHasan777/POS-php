@@ -1,7 +1,5 @@
 <?php
 require_once __DIR__ . '/../models/Core.php';
-// In a fuller implementation, we might inject specific models instead of using Core directly for everything.
-// But for dashboard stats aggregation using raw SQL via Core is often efficient.
 
 class ShopAdminController {
     private $core;

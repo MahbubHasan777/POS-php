@@ -12,7 +12,6 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $role = $_SESSION['role'];
 
-// Mark all as read on visit (simple logic)
 $db->query("UPDATE notifications SET is_read = TRUE WHERE user_id = ?", [$user_id], "i");
 
 $notifs = $db->query("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50", [$user_id], "i");

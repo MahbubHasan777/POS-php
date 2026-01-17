@@ -4,11 +4,9 @@ requireRole('shop_admin');
 $shop_id = $_SESSION['shop_id'];
 $orderModel = new Order();
 
-// Date Filter
 $start_date = $_GET['start'] ?? date('Y-m-01');
 $end_date = $_GET['end'] ?? date('Y-m-d');
 
-// Fetch Orders via Model
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['return_order'])) {
     $orderModel->returnOrder($_POST['order_id'], $shop_id);
     $success = "Order #{$_POST['order_id']} returned and stock restored."; // Simple feedback
@@ -16,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['return_order'])) {
 
 $orders = $orderModel->getReportWithProfit($shop_id, $start_date, $end_date);
 
-// Calculate Totals
 $total_revenue = 0;
 $total_profit = 0;
 $orders_data = [];
@@ -139,13 +136,39 @@ $daily_sales = $orderModel->getDailySales($shop_id, date('Y-m-d', strtotime('-7 
     </div>
 
     <script>
+        function ajaxRequest(url, options = {}) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const method = options.method || 'GET';
+                xhr.open(method, url);
+                
+                if (options.headers) {
+                    for (let key in options.headers) {
+                        xhr.setRequestHeader(key, options.headers[key]);
+                    }
+                }
+
+                xhr.onload = () => {
+                    resolve({
+                        ok: xhr.status >= 200 && xhr.status < 300,
+                        status: xhr.status,
+                        json: () => Promise.resolve(JSON.parse(xhr.responseText)),
+                        text: () => Promise.resolve(xhr.responseText)
+                    });
+                };
+                xhr.onerror = () => reject(new Error('Network Error'));
+                
+                xhr.send(options.body || null);
+            });
+        }
+
         function showDetails(id) {
             const modal = document.getElementById('detailsModal');
             const content = document.getElementById('modalContent');
             modal.style.display = 'flex';
             content.innerHTML = 'Loading...';
             
-            fetch('../../api/get_order_details.php?id=' + id)
+            ajaxRequest('../../api/get_order_details.php?id=' + id)
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
@@ -184,7 +207,7 @@ $daily_sales = $orderModel->getDailySales($shop_id, date('Y-m-d', strtotime('-7 
                 daily_sales: <?php echo json_encode($daily_sales); ?>
             };
 
-            fetch('../../api/ai_insight.php', {
+            ajaxRequest('../../api/ai_insight.php', {
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: { 'Content-Type': 'application/json' }

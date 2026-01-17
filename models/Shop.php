@@ -52,7 +52,6 @@ class Shop extends Core {
     }
 
     public function renewSubscription($shop_id, $plan_id, $amount, $method) {
-        // 1. Calculate Rollover from current state
         $current = $this->query("SELECT s.cycle_start_date, p.max_sales, s.rollover_sales 
                                  FROM shops s 
                                  JOIN subscription_plans p ON s.subscription_plan_id = p.id 
@@ -68,18 +67,15 @@ class Shop extends Core {
             $rollover = $remaining;
         }
 
-        // 2. Record Payment
         $this->query("INSERT INTO subscription_payments (shop_id, plan_id, amount, payment_status, payment_method) VALUES (?, ?, ?, 'paid', ?)", 
                      [$shop_id, $plan_id, $amount, $method], "iids");
         
-        // 3. Update Shop Plan, Rollover, and Reset Cycle
         $this->query("UPDATE shops SET subscription_plan_id = ?, cycle_start_date = CURRENT_TIMESTAMP, rollover_sales = ?, status = 'active' WHERE id = ?", 
                      [$plan_id, $rollover, $shop_id], "iii");
     }
 
     public function getStats($id = null) {
         if ($id) {
-            // Specific Shop Stats for Dashboard
             $shop = $this->query("SELECT s.cycle_start_date, p.max_sales, s.rollover_sales, p.name as plan_name 
                                   FROM shops s 
                                   JOIN subscription_plans p ON s.subscription_plan_id = p.id 
@@ -92,15 +88,13 @@ class Shop extends Core {
 
             return [
                 'plan_name' => $shop['plan_name'],
-                'max_sales' => $total_limit, // Return effective limit for display
+                'max_sales' => $total_limit, 
                 'base_limit' => $shop['max_sales'],
                 'rollover' => $shop['rollover_sales'],
                 'current_sales' => $sales_count
             ];
         } else {
-            // Global Stats for Super Admin
             $shops = $this->query("SELECT COUNT(*) as count FROM shops")->get_result()->fetch_assoc()['count'];
-            // Fix: Calculate revenue from actual payments
             $revenue = $this->query("SELECT SUM(amount) as total FROM subscription_payments WHERE payment_status = 'paid'")->get_result()->fetch_assoc()['total'] ?? 0;
             return ['shops' => $shops, 'revenue' => $revenue];
         }

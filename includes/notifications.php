@@ -10,7 +10,6 @@ function checkStock($product_id) {
     $product = $stmt->get_result()->fetch_assoc();
 
     if ($product && $product['stock_qty'] <= $product['alert_threshold']) {
-        // Find Shop Admin
         $shop_id = $product['shop_id'];
         $stmt_admin = $db->query("SELECT id FROM users WHERE shop_id = ? AND role = 'shop_admin' LIMIT 1", [$shop_id], "i");
         $admin = $stmt_admin->get_result()->fetch_assoc();
@@ -19,7 +18,6 @@ function checkStock($product_id) {
             $title = "Low Stock Alert: " . $product['name'];
             $msg = "The stock for {$product['name']} is low ({$product['stock_qty']} left). Please restock.";
             
-            // Check if alert already sent recently (optional optimization, skipping for simplicity)
             createNotification($admin['id'], $title, $msg);
         }
     }

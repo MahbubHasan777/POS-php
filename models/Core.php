@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . '/../includes/db.php'; // Ensure DB and Session are started
-
+require_once __DIR__ . '/../includes/db.php'; 
 class Core {
     protected $db;
     protected $conn;

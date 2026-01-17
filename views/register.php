@@ -25,6 +25,7 @@
                 <input type="text" name="username" class="form-input" required placeholder="John Doe">
             </div>
 
+            
             <div class="form-group">
                 <label class="form-label">Email Address</label>
                 <input type="email" name="email" class="form-input" required placeholder="owner@business.com">

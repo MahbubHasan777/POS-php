@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'max' => $_POST['max_discount_amount'],
             'expiry' => $_POST['expiry_date']
         ]);
-        redirect('coupons.php'); // Prevent resubmission
+        redirect('coupons.php');
     } elseif (isset($_POST['update_coupon'])) {
         $couponModel->update($_POST['id'], [
             'code' => $_POST['code'],

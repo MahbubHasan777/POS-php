@@ -14,7 +14,6 @@ class InventoryController {
         $this->brandModel = new Brand();
     }
 
-    // Product Methods
     public function getProducts($shop_id, $search = '', $category_id = null) {
         return $this->productModel->getAll($shop_id, $search, $category_id);
     }
@@ -24,11 +23,9 @@ class InventoryController {
     }
 
     public function saveProduct($data, $shop_id, $id = null) {
-        // Basic validation could happen here
         return $this->productModel->save($data, $shop_id, $id);
     }
 
-    // Category Methods
     public function getCategories($shop_id) {
         return $this->categoryModel->getAll($shop_id);
     }
@@ -41,7 +38,6 @@ class InventoryController {
         return $this->categoryModel->delete($id, $shop_id);
     }
 
-    // Brand Methods
     public function getBrands($shop_id) {
         return $this->brandModel->getAll($shop_id);
     }

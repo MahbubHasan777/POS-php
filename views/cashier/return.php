@@ -101,11 +101,36 @@ if ($invoice_id) {
 </div>
 
 <script>
+function ajaxRequest(url, options = {}) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const method = options.method || 'GET';
+        xhr.open(method, url);
+        
+        if (options.headers) {
+            for (let key in options.headers) {
+                xhr.setRequestHeader(key, options.headers[key]);
+            }
+        }
+
+        xhr.onload = () => {
+            resolve({
+                ok: xhr.status >= 200 && xhr.status < 300,
+                status: xhr.status,
+                json: () => Promise.resolve(JSON.parse(xhr.responseText)),
+                text: () => Promise.resolve(xhr.responseText)
+            });
+        };
+        xhr.onerror = () => reject(new Error('Network Error'));
+        
+        xhr.send(options.body || null);
+    });
+}
+
 async function processRefund() {
     const form = document.getElementById('refundForm');
     const formData = new FormData(form);
     
-    // Check if any item selected
     let valid = false;
     for(let [k,v] of formData.entries()) {
         if(k.startsWith('items') && parseInt(v) > 0) valid = true;
@@ -119,13 +144,13 @@ async function processRefund() {
     if(!confirm("Are you sure? This will update stock and order totals.")) return;
 
     try {
-        const res = await fetch('../../api/process_return.php', {
+        const res = await ajaxRequest('../../api/process_return.php', {
             method: 'POST',
             body: formData
         });
         
         const rawText = await res.text();
-        console.log("Raw Response:", rawText); // Debugging
+        console.log("Raw Response:", rawText);
 
         try {
             const data = JSON.parse(rawText);

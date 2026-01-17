@@ -1,9 +1,6 @@
 <?php
 require_once '../../models/Core.php'; 
-// Ideally we'd have a ShopController or ReportController to aggregate stats. 
-// For now, using direct queries via Core or specialized Model methods makes sense.
-// Let's assume we use Core for ad-hoc dashboard stats to keep it clean if specific model methods don't exist yet.
-requireSameRole: require_once '../../includes/functions.php'; // Ensure functions loaded
+requireSameRole: require_once '../../includes/functions.php';
 requireRole('shop_admin');
 $shop_id = $_SESSION['shop_id'];
 $core = new Core();
@@ -84,14 +81,12 @@ $subStats = $shopModel->getStats($shop_id);
                     </thead>
                     <tbody>
                         <?php
-
-                        // Execute query
                         $recent_orders = $core->query("SELECT orders.*, users.username as cashier_name FROM orders 
                                                      JOIN users ON orders.cashier_id = users.id 
                                                      WHERE orders.shop_id = ? 
                                                      ORDER BY created_at DESC LIMIT 5", [$shop_id], "i");
                         
-                        $res = $recent_orders->get_result(); // Fetch result set once immediately
+                        $res = $recent_orders->get_result();
 
                         if ($res && $res->num_rows > 0):
                             while($order = $res->fetch_assoc()):

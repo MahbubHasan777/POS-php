@@ -3,7 +3,6 @@ require_once '../../models/Shop.php';
 requireRole('shop_admin');
 
 $shopModel = new Shop();
-// Fetch available plans directly via Core/Query, excluding Free/Trial plans (Price > 0)
 $plans = $shopModel->query("SELECT * FROM subscription_plans WHERE price > 0")->get_result();
 ?>
 <!DOCTYPE html>

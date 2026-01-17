@@ -30,8 +30,6 @@ function isLoggedIn() {
 
 function requireRole($role) {
     if (!isLoggedIn()) {
-        // Use a relative path mechanism or hardcoded if project structure is fixed.
-        // Assuming "/pos" root.
         redirect('/pos/views/login.php');
     }
     if ($_SESSION['role'] !== $role) {

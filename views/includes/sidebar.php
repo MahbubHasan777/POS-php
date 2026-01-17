@@ -3,10 +3,8 @@ $role = $_SESSION['role'] ?? 'guest';
 $current_page = basename($_SERVER['PHP_SELF']);
 $current_dir = basename(dirname($_SERVER['PHP_SELF']));
 
-// Determine path prefixes
 $role_path = ($current_dir === 'common') ? '../' . $role . '/' : '';
 $common_path = ($current_dir === 'common') ? '' : '../common/';
-// Logout is always in views/, so if we are in views/X/, ../logout.php reaches views/logout.php
 $logout_path = '../logout.php';
 ?>
 <div class="sidebar">

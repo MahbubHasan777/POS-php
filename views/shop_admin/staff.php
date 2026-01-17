@@ -10,7 +10,6 @@ $editStaff = null;
 $error = null;
 $success = null;
 
-// Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['create_staff'])) {
         if ($userModel->exists($_POST['email'], $_POST['username'])) {
@@ -39,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             $success = "Cashier updated successfully.";
             
-            // Redirect to clear edit mode
             header("Location: staff.php");
             exit;
         }
@@ -53,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Handle Edit Mode
 if (isset($_GET['edit'])) {
     $editStaff = $userModel->getById($_GET['edit'], $shop_id);
     if ($editStaff) {
@@ -89,7 +86,6 @@ $staffMembers = $userModel->getShopStaff($shop_id);
                 </div>
             <?php endif; ?>
 
-            <!-- Form -->
             <form method="POST" autocomplete="off" style="background: var(--bg-card); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <?php if($editMode): ?>
                     <input type="hidden" name="id" value="<?php echo $editStaff['id']; ?>">
@@ -122,7 +118,6 @@ $staffMembers = $userModel->getShopStaff($shop_id);
                 </div>
             </form>
 
-            <!-- Table -->
             <div class="table-container">
                 <table>
                     <thead>

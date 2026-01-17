@@ -59,10 +59,8 @@ class Order extends Core {
         $order = $this->get($order_id, $shop_id);
         if (!$order || $order['status'] === 'returned') return false;
 
-        // 1. Update Status
         $this->query("UPDATE orders SET status = 'returned' WHERE id = ?", [$order_id], "i");
 
-        // 2. Restore Stock
         $items = $this->getItems($order_id);
         foreach ($items as $item) {
             $this->query("UPDATE products SET stock_qty = stock_qty + ? WHERE id = ?", [$item['quantity'], $item['product_id']], "ii");

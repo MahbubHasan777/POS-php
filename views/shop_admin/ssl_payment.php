@@ -10,14 +10,7 @@ $plan_id = $_POST['plan_id'];
 $amount = $_POST['amount'];
 $shop_id = $_SESSION['shop_id'];
 
-// Ideally, here we would integrate with SSLCommerz API (Sandbox)
-// Constructing the request to SSLCommerz Sandbox...
-// But as per user instructions, we just need the flow.
-// Since we can't easily do a real external redirect to a sandbox without credentials in this environment,
-// We will simulate the "Payment Page" here.
-
 if (isset($_POST['confirm_payment'])) {
-    // Process Payment Simulation
     $shopModel = new Shop();
     $shopModel->renewSubscription($shop_id, $plan_id, $amount, 'SSLCommerz Sandbox');
     
