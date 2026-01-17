@@ -4,11 +4,9 @@ requireRole('shop_admin');
 $shop_id = $_SESSION['shop_id'];
 $orderModel = new Order();
 
-// Date Filter
 $start_date = $_GET['start'] ?? date('Y-m-01');
 $end_date = $_GET['end'] ?? date('Y-m-d');
 
-// Fetch Orders via Model
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['return_order'])) {
     $orderModel->returnOrder($_POST['order_id'], $shop_id);
     $success = "Order #{$_POST['order_id']} returned and stock restored."; // Simple feedback
@@ -16,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['return_order'])) {
 
 $orders = $orderModel->getReportWithProfit($shop_id, $start_date, $end_date);
 
-// Calculate Totals
 $total_revenue = 0;
 $total_profit = 0;
 $orders_data = [];

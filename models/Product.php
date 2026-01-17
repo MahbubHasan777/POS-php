@@ -34,7 +34,6 @@ class Product extends Core {
     }
 
     public function save($data, $shop_id, $id = null) {
-        // data: name, category_id, brand_id, buy_price, sell_price, stock_qty, alert_threshold, image
         if ($id) {
             $this->query("UPDATE products SET name=?, category_id=?, brand_id=?, buy_price=?, sell_price=?, stock_qty=?, alert_threshold=?, image=? WHERE id=? AND shop_id=?", 
                 [$data['name'], $data['category_id'], $data['brand_id'], $data['buy_price'], $data['sell_price'], $data['stock_qty'], $data['alert_threshold'], $data['image'], $id, $shop_id], "siidddissi");

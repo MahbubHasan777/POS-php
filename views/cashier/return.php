@@ -131,7 +131,6 @@ async function processRefund() {
     const form = document.getElementById('refundForm');
     const formData = new FormData(form);
     
-    // Check if any item selected
     let valid = false;
     for(let [k,v] of formData.entries()) {
         if(k.startsWith('items') && parseInt(v) > 0) valid = true;
@@ -151,7 +150,7 @@ async function processRefund() {
         });
         
         const rawText = await res.text();
-        console.log("Raw Response:", rawText); // Debugging
+        console.log("Raw Response:", rawText);
 
         try {
             const data = JSON.parse(rawText);

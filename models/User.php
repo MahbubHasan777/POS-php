@@ -4,7 +4,6 @@ require_once 'Core.php';
 class User extends Core {
     
     public function login($email, $password) {
-        // Query now includes shop status if shop_id is present
         $sql = "SELECT u.*, s.status as shop_status 
                 FROM users u 
                 LEFT JOIN shops s ON u.shop_id = s.id 
@@ -14,9 +13,8 @@ class User extends Core {
         $user = $result->get_result()->fetch_assoc();
 
         if ($user && password_verify($password, $user['password_hash'])) {
-            // Check suspension logic
             if ($user['shop_id'] && $user['shop_status'] === 'suspended') {
-                return 'suspended'; // Return specific status to handle in controller
+                return 'suspended'; 
             }
             return $user;
         }
@@ -24,7 +22,6 @@ class User extends Core {
     }
 
     public function create($data) {
-        // data: shop_id, role, username, email, password, full_name
         $hash = password_hash($data['password'], PASSWORD_BCRYPT);
         $this->query("INSERT INTO users (shop_id, role, username, email, password_hash, full_name) VALUES (?, ?, ?, ?, ?, ?)", 
             [$data['shop_id'], $data['role'], $data['username'], $data['email'], $hash, $data['full_name']], "isssss");
@@ -52,7 +49,6 @@ class User extends Core {
     }
 
     public function delete($id, $shop_id) {
-        // Check for dependencies (Foreign Key Constraints)
         $check = $this->query("SELECT id FROM orders WHERE cashier_id = ?", [$id], "i");
         if ($check->get_result()->num_rows > 0) {
             return "Cannot delete cashier: This user has processed sales. Deleting them would corrupt sales history. Consider changing their password instead.";

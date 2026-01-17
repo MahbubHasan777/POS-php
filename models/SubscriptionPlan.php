@@ -22,12 +22,9 @@ class SubscriptionPlan extends Core {
     }
 
     public function delete($id) {
-        // Only delete if no shops are using it, or handle constraints
-        // For simplicity, we might simple error if used, or use cascading delete (dangerous)
-        // Let's check first
         $check = $this->query("SELECT COUNT(*) as count FROM shops WHERE subscription_plan_id = ?", [$id], "i")->get_result()->fetch_assoc()['count'];
         if ($check > 0) {
-            return false; // Cannot delete, in use
+            return false; 
         }
         $this->query("DELETE FROM subscription_plans WHERE id = ?", [$id], "i");
         return true;

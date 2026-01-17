@@ -5,7 +5,6 @@ requireRole('cashier');
 $cashier_id = $_SESSION['user_id'];
 $shop_id = $_SESSION['shop_id'];
 
-// Recent sales
 $sales = $db->query("SELECT * FROM orders WHERE shop_id = ? AND cashier_id = ? ORDER BY created_at DESC LIMIT 50", 
                     [$shop_id, $cashier_id], "ii");
 ?>

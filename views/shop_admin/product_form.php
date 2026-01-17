@@ -11,7 +11,6 @@ if (isset($_GET['id'])) {
     $product = $stmt->get_result()->fetch_assoc();
 }
 
-// Fetch Categories & Brands
 $cats = $db->query("SELECT * FROM categories WHERE shop_id = ?", [$shop_id], "i")->get_result()->fetch_all(MYSQLI_ASSOC);
 $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$shop_id], "i")->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -24,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stock = $_POST['stock_qty'];
     $alert = $_POST['alert_threshold'];
     
-    // Image Upload
     $imagePath = $product['image'] ?? null;
     
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
@@ -48,11 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$error) {
         if ($product) {
-            // Update
             $db->query("UPDATE products SET name=?, category_id=?, brand_id=?, buy_price=?, sell_price=?, stock_qty=?, alert_threshold=?, image=? WHERE id=? AND shop_id=?", 
                 [$name, $cat_id, $brand_id, $buy, $sell, $stock, $alert, $imagePath, $product['id'], $shop_id], "siidddissi");
         } else {
-            // Insert
             $db->query("INSERT INTO products (shop_id, name, category_id, brand_id, buy_price, sell_price, stock_qty, alert_threshold, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [$shop_id, $name, $cat_id, $brand_id, $buy, $sell, $stock, $alert, $imagePath], "isiidddis");
         }

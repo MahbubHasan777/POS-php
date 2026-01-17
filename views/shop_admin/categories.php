@@ -5,7 +5,6 @@ $shop_id = $_SESSION['shop_id'];
 $catModel = new Category();
 $brandModel = new Brand();
 
-// Handle Form Submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_category'])) {
         $catModel->create($shop_id, $_POST['name']);
@@ -51,7 +50,6 @@ $brands = $brandModel->getAll($shop_id);
             <h1>Structure Management</h1>
             
             <div class="split-view">
-                <!-- Categories Section -->
                 <div>
                     <h2>Categories</h2>
                     <form method="POST" class="form-inline">
@@ -79,7 +77,6 @@ $brands = $brandModel->getAll($shop_id);
                     </div>
                 </div>
 
-                <!-- Brands Section -->
                 <div>
                     <h2>Brands</h2>
                     <form method="POST" class="form-inline">

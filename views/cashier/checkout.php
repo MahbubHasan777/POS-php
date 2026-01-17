@@ -22,25 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $orderModel = new Order();
     $productModel = new Product();
     
-    // Process Payment & Order
     $payment_method = $_POST['payment_method'];
     $amount_given = (float)$_POST['amount_given'];
     $change = $amount_given - $grand_total;
     
-    // Create Order
     $order_id = $orderModel->create($_SESSION['shop_id'], $_SESSION['user_id'], [
         'sub' => $subtotal,
         'tax' => $tax,
         'grand' => $grand_total
     ], $payment_method);
     
-    // Add Items & Update Stock
+
     $orderModel->addItems($order_id, $cart);
     foreach($cart as $item) {
         $productModel->decreaseStock($item['id'], $item['qty']);
     }
     
-    // Clear Cart
     $_SESSION['cart'] = [];
     
     redirect("receipt.php?id=$order_id&change=$change");
