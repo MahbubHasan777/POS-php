@@ -1,11 +1,10 @@
 <?php
 require_once '../models/Product.php';
-// Session start is usually handled in db.php but let's be safe
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once '../includes/functions.php'; // Ensure helpers
+require_once '../includes/functions.php';
 
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
@@ -75,7 +74,6 @@ elseif ($action === 'apply_voucher') {
     $couponModel = new Coupon();
     $code = $_POST['code'];
     
-    // Fetch coupon
     $coupon = $couponModel->query("SELECT * FROM coupons WHERE shop_id = ? AND code = ? AND expiry_date >= CURDATE()", [$shop_id, $code], "is")->get_result()->fetch_assoc();
     
     $cart_total = 0;
@@ -91,7 +89,6 @@ elseif ($action === 'apply_voucher') {
         exit;
     }
 
-    // Calculate Discount
     $discount_amount = 0;
     if ($coupon['discount_type'] === 'fixed') {
         $discount_amount = $coupon['discount_value'];
@@ -159,14 +156,13 @@ elseif ($action === 'apply_voucher') {
     
     foreach ($held_orders as $key => $order) {
         if ($order['id'] == $id) {
-            $_SESSION['cart'] = $order['cart']; // Restore cart
-            unset($_SESSION['held_orders'][$key]); // Remove from held list
+            $_SESSION['cart'] = $order['cart']; 
+            unset($_SESSION['held_orders'][$key]);
             $found = true;
             break;
         }
     }
-    
-    // Re-index array
+
     $_SESSION['held_orders'] = array_values($_SESSION['held_orders']);
     
     echo json_encode([

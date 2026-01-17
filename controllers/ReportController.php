@@ -18,8 +18,6 @@ class ReportController {
         while($row = $orders->fetch_assoc()) {
             $total_revenue += $row['grand_total'];
             
-            // Calculate Profit per order (Simplistic approach to match current view logic)
-            // Ideally this should be a JOIN in the Model
             $profit = $this->calculateOrderProfit($row['id']);
             $total_profit += $profit;
 

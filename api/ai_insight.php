@@ -12,13 +12,12 @@ if (!$apiKey || $apiKey === 'your_generic_key') {
     exit;
 }
 
-// Format Top Items
 $topItemsStr = "";
 foreach ($input['top_items'] as $item) {
     $topItemsStr .= "- {$item['name']}: {$item['total_qty']} sold (\${$item['total_revenue']})\n";
 }
 
-// Format Daily Trend
+
 $trendStr = "";
 foreach ($input['daily_sales'] as $day) {
     $trendStr .= "- {$day['date']}: \${$day['revenue']}\n";
@@ -52,7 +51,6 @@ Example structure:
 
 Keep the tone professional, motivating, and concise. HTML only.";
 
-// Call Gemini API
 $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $apiKey;
 $data = [
     "contents" => [

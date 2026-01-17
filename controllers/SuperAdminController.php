@@ -13,7 +13,6 @@ class SuperAdminController {
 
     public function getDashboardStats() {
         $stats = $this->shopModel->getStats();
-        // Ad-hoc query for user count, encapsulated here
         $users_count = $this->shopModel->query("SELECT COUNT(*) as count FROM users")->get_result()->fetch_assoc()['count'];
         
         return [

@@ -1,8 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/db.php';
-// session_start(); // Handled in db.php
-error_reporting(E_ALL); // Temporarily enable reporting for logs
-ini_set('display_errors', 0); // Do not echo errors to output
+error_reporting(E_ALL); 
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
 
 function logDebug($msg) {
@@ -11,7 +10,6 @@ function logDebug($msg) {
 
 logDebug("Script Started");
 
-// Basic auth check inline for API
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'cashier') {
     logDebug("Unauthorized access attempt: " . print_r($_SESSION, true));
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
@@ -20,14 +18,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'cashier') {
 
 $shop_id = $_SESSION['shop_id'];
 $order_id = $_POST['order_id'];
-$items = $_POST['items'] ?? []; // format: [product_id => qty]
+$items = $_POST['items'] ?? [];
 
 if (!$order_id || empty($items)) {
     echo json_encode(['success' => false, 'message' => 'Invalid data']);
     exit;
 }
 
-// $db->begin_transaction(); // Error: Method undefined on wrapper
 
 try {
     $db->conn->begin_transaction();
@@ -36,7 +33,6 @@ try {
         $qty = (int)$qty;
         if ($qty <= 0) continue;
 
-        // Verify item was in order
         $stmt = $db->query("SELECT * FROM order_items WHERE order_id = ? AND product_id = ?", [$order_id, $prod_id], "ii");
         $order_item = $stmt->get_result()->fetch_assoc();
 
@@ -48,27 +44,18 @@ try {
              throw new Exception("Return quantity can be greater than sold quantity");
         }
 
-        // Check if already returned? (Skipping for now as per simple requirement, but ideally should check)
         
         $refund_amount = $order_item['unit_price'] * $qty;
-
-        // Insert Return
         $db->query("INSERT INTO returns (shop_id, order_id, product_id, quantity, refund_amount, reason) VALUES (?, ?, ?, ?, ?, 'Customer Return')", 
                    [$shop_id, $order_id, $prod_id, $qty, $refund_amount], "iiiid");
 
-        // Update Stock (Increase)
         $db->query("UPDATE products SET stock_qty = stock_qty + ? WHERE id = ?", [$qty, $prod_id], "ii");
 
-        // Update Order Item (Reduce Qty & Subtotal)
         $new_item_qty = $order_item['quantity'] - $qty;
         $new_item_subtotal = $order_item['subtotal'] - $refund_amount;
         $db->query("UPDATE order_items SET quantity = ?, subtotal = ? WHERE id = ?", 
                    [$new_item_qty, $new_item_subtotal, $order_item['id']], "idi");
 
-        // Update Order (Reduce Total & Grand Total)
-        // We do this inside loop, but efficient way is to sum up and do once. 
-        // For simplicity/safety in transaction, we do it iteratively or sum up.
-        // Let's sum up to avoid multiple writes to same order row.
         $total_refund += $refund_amount;
     }
 

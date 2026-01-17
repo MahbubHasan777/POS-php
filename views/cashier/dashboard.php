@@ -165,6 +165,32 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
     </div>
 
     <script>
+        function ajaxRequest(url, options = {}) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const method = options.method || 'GET';
+                xhr.open(method, url);
+                
+                if (options.headers) {
+                    for (let key in options.headers) {
+                        xhr.setRequestHeader(key, options.headers[key]);
+                    }
+                }
+
+                xhr.onload = () => {
+                    resolve({
+                        ok: xhr.status >= 200 && xhr.status < 300,
+                        status: xhr.status,
+                        json: () => Promise.resolve(JSON.parse(xhr.responseText)),
+                        text: () => Promise.resolve(xhr.responseText)
+                    });
+                };
+                xhr.onerror = () => reject(new Error('Network Error'));
+                
+                xhr.send(options.body || null);
+            });
+        }
+
         const searchInput = document.getElementById('searchInput');
         const searchResults = document.getElementById('searchResults');
         const cartItems = document.getElementById('cartItems');
@@ -188,7 +214,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
              const brand = document.getElementById('brandFilter').value;
              const sort = document.getElementById('sortFilter').value;
 
-             fetch(`../../api/search_products.php?q=${query}&category_id=${cat}&brand_id=${brand}&sort=${sort}`)
+             ajaxRequest(`../../api/search_products.php?q=${query}&category_id=${cat}&brand_id=${brand}&sort=${sort}`)
                 .then(res => res.json())
                 .then(data => {
                     searchResults.innerHTML = '';
@@ -235,7 +261,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
             formData.append('action', 'add');
             formData.append('id', id);
 
-            fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+            ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     cart = data.cart;
@@ -244,7 +270,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
         }
 
         function fetchCart() {
-            fetch('../../api/cart_actions.php') // Default gets cart
+            ajaxRequest('../../api/cart_actions.php') // Default gets cart
                 .then(res => res.json())
                 .then(data => {
                     cart = data.cart;
@@ -257,7 +283,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
             formData.append('action', 'update_qty');
             formData.append('id', id);
             formData.append('qty', qty);
-             fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+             ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     cart = data.cart;
@@ -268,7 +294,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
         function clearCart() {
              const formData = new FormData();
             formData.append('action', 'clear');
-             fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+             ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     cart = data.cart;
@@ -331,7 +357,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
             formData.append('action', 'hold');
             formData.append('customer', customer);
             
-            fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+            ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     cart = data.cart;
@@ -343,7 +369,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
             const formData = new FormData();
             formData.append('action', 'list_held');
             
-            fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+            ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     const list = document.getElementById('heldList');
@@ -378,7 +404,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
             formData.append('action', 'recall');
             formData.append('id', id);
             
-            fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+            ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     console.log("Recall Response:", data);
@@ -407,7 +433,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
             formData.append('action', 'apply_voucher');
             formData.append('code', code);
 
-            fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+            ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
@@ -423,7 +449,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
         function removeVoucher() {
             const formData = new FormData();
             formData.append('action', 'remove_voucher');
-             fetch('../../api/cart_actions.php', { method: 'POST', body: formData })
+             ajaxRequest('../../api/cart_actions.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     discount = null;
@@ -438,7 +464,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
         // Let's ensure fetchCart updates discount
         const originalFetchCart = fetchCart;
         fetchCart = function() {
-             fetch('../../api/cart_actions.php')
+             ajaxRequest('../../api/cart_actions.php')
                 .then(res => res.json())
                 .then(data => {
                     cart = data.cart;
