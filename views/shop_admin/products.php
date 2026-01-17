@@ -1,11 +1,11 @@
 <?php
 require_once '../../models/Product.php';
-require_once '../../models/Category.php'; 
+require_once '../../models/Category.php';
 requireRole('shop_admin');
 $shop_id = $_SESSION['shop_id'];
 
 $productModel = new Product();
-$catModel = new Category(); 
+$catModel = new Category();
 
 $search = $_GET['search'] ?? '';
 $filter_cat = $_GET['category'] ?? '';
@@ -14,28 +14,33 @@ $products = $productModel->getAll($shop_id, $search, $filter_cat);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Inventory - Shop Admin</title>
     <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
+
 <body>
     <div class="dashboard-layout">
         <?php include '../includes/sidebar.php'; ?>
-        
+
         <div class="main-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h1>Inventory Management</h1>
-                <a href="product_form.php" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.75rem 1.5rem;">+ Add Product</a>
+                <a href="product_form.php" class="btn-primary"
+                    style="text-decoration: none; width: auto; padding: 0.75rem 1.5rem;">+ Add Product</a>
             </div>
 
-            <form class="form-group" style="display: flex; gap: 1rem; background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem;">
-                <input type="text" name="search" class="form-input" placeholder="Search by name or ID..." value="<?php echo htmlspecialchars($search); ?>">
+            <form class="form-group"
+                style="display: flex; gap: 1rem; background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem;">
+                <input type="text" name="search" class="form-input" placeholder="Search by name or ID..."
+                    value="<?php echo htmlspecialchars($search); ?>">
                 <select name="category" class="form-input">
                     <option value="">All Categories</option>
-                    <?php 
+                    <?php
                     $cats = $catModel->getAll($shop_id);
-                    while($c = $cats->fetch_assoc()) {
+                    while ($c = $cats->fetch_assoc()) {
                         $selected = $filter_cat == $c['id'] ? 'selected' : '';
                         echo "<option value='{$c['id']}' $selected>{$c['name']}</option>";
                     }
@@ -59,29 +64,32 @@ $products = $productModel->getAll($shop_id, $search, $filter_cat);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($p = $products->fetch_assoc()): ?>
-                        <tr>
-                            <td>
-                                <?php if($p['image']): ?>
-                                    <img src="../../uploads/<?php echo htmlspecialchars($p['image']); ?>" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
-                                <?php else: ?>
-                                    <div style="width: 40px; height: 40px; background: #333; border-radius: 4px;"></div>
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo htmlspecialchars($p['name']); ?></td>
-                            <td><?php echo htmlspecialchars($p['cat_name'] ?? '-'); ?></td>
-                            <td><?php echo htmlspecialchars($p['brand_name'] ?? '-'); ?></td>
-                            <td><?php echo $p['buy_price']; ?></td>
-                            <td><?php echo $p['sell_price']; ?></td>
-                            <td>
-                                <span style="color: <?php echo $p['stock_qty'] <= $p['alert_threshold'] ? '#f87171' : '#34d399'; ?>">
-                                    <?php echo $p['stock_qty']; ?>
-                                </span>
-                            </td>
-                            <td>
-                                <a href="product_form.php?id=<?php echo $p['id']; ?>" style="color: var(--primary); text-decoration: none;">Edit</a>
-                            </td>
-                        </tr>
+                        <?php while ($p = $products->fetch_assoc()): ?>
+                            <tr>
+                                <td>
+                                    <?php if ($p['image']): ?>
+                                        <img src="../../uploads/<?php echo htmlspecialchars($p['image']); ?>"
+                                            style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                    <?php else: ?>
+                                        <div style="width: 40px; height: 40px; background: #333; border-radius: 4px;"></div>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo htmlspecialchars($p['name']); ?></td>
+                                <td><?php echo htmlspecialchars($p['cat_name'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($p['brand_name'] ?? '-'); ?></td>
+                                <td><?php echo $p['buy_price']; ?></td>
+                                <td><?php echo $p['sell_price']; ?></td>
+                                <td>
+                                    <span
+                                        style="color: <?php echo $p['stock_qty'] <= $p['alert_threshold'] ? '#f87171' : '#34d399'; ?>">
+                                        <?php echo $p['stock_qty']; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="product_form.php?id=<?php echo $p['id']; ?>"
+                                        style="color: var(--primary); text-decoration: none;">Edit</a>
+                                </td>
+                            </tr>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
@@ -89,4 +97,5 @@ $products = $productModel->getAll($shop_id, $search, $filter_cat);
         </div>
     </div>
 </body>
+
 </html>
