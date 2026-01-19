@@ -81,7 +81,7 @@ if ($httpCode === 200) {
     $error = curl_error($ch);
     $responseBody = strip_tags($response); // basic security
     echo json_encode([
-        'success' => false, 
+        'success' => false,
         'message' => "Gemini API Failed (HTTP $httpCode). Error: $error. Response: $responseBody"
     ]);
 }

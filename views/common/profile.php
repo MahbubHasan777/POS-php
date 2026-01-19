@@ -54,22 +54,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <?php if($message): ?><div style="color: #34d399; margin-bottom: 1rem;"><?php echo $message; ?></div><?php endif; ?>
                 <?php if($error): ?><div style="color: #f87171; margin-bottom: 1rem;"><?php echo $error; ?></div><?php endif; ?>
+                
+                <div id="js-error-container" style="color: #f87171; margin-bottom: 1rem; display: none;"></div>
 
-                <form method="POST">
+                <form method="POST" id="password-form">
                     <div class="form-group">
                         <label class="form-label">Current Password</label>
                         <input type="password" name="current_password" class="form-input" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">New Password</label>
-                        <input type="password" name="new_password" class="form-input" required>
+                        <input type="password" name="new_password" id="new_password" class="form-input" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Confirm New Password</label>
-                        <input type="password" name="confirm_password" class="form-input" required>
+                        <input type="password" name="confirm_password" id="confirm_password" class="form-input" required>
                     </div>
                     <button type="submit" class="btn-primary">Update Password</button>
                 </form>
+                <script src="../../assets/js/common/profile.js"></script>
             </div>
         </div>
     </div>
