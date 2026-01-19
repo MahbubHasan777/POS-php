@@ -41,24 +41,28 @@ $coupons = $couponModel->getAll($shop_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Coupons</title>
     <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
+
 <body>
     <div class="dashboard-layout">
         <?php include '../includes/sidebar.php'; ?>
         <div class="main-content">
             <h1>Coupon Management</h1>
-            
-            <form method="POST" autocomplete="off" style="background: var(--bg-card); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-                <?php if($editMode): ?>
+
+            <form method="POST" autocomplete="off"
+                style="background: var(--bg-card); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <?php if ($editMode): ?>
                     <input type="hidden" name="id" value="<?php echo $editCoupon['id']; ?>">
                 <?php endif; ?>
                 <div>
                     <label class="form-label">Code</label>
-                    <input type="text" name="code" class="form-input" required placeholder="SUMMER25" value="<?php echo $editMode ? htmlspecialchars($editCoupon['code']) : ''; ?>">
+                    <input type="text" name="code" class="form-input" required placeholder="SUMMER25"
+                        value="<?php echo $editMode ? htmlspecialchars($editCoupon['code']) : ''; ?>">
                 </div>
                 <div>
                     <label class="form-label">Type</label>
@@ -69,26 +73,32 @@ $coupons = $couponModel->getAll($shop_id);
                 </div>
                 <div>
                     <label class="form-label">Value</label>
-                    <input type="number" step="0.01" name="discount_value" class="form-input" required value="<?php echo $editMode ? $editCoupon['discount_value'] : ''; ?>">
+                    <input type="number" step="0.01" name="discount_value" class="form-input" required
+                        value="<?php echo $editMode ? $editCoupon['discount_value'] : ''; ?>">
                 </div>
                 <div>
                     <label class="form-label">Min Order Amount</label>
-                    <input type="number" step="0.01" name="min_order_amount" class="form-input" value="<?php echo $editMode ? $editCoupon['min_order_amount'] : '0'; ?>">
+                    <input type="number" step="0.01" name="min_order_amount" class="form-input"
+                        value="<?php echo $editMode ? $editCoupon['min_order_amount'] : '0'; ?>">
                 </div>
                 <div>
                     <label class="form-label">Max Discount (for %)</label>
-                    <input type="number" step="0.01" name="max_discount_amount" class="form-input" value="<?php echo $editMode ? $editCoupon['max_discount_amount'] : '0'; ?>">
+                    <input type="number" step="0.01" name="max_discount_amount" class="form-input"
+                        value="<?php echo $editMode ? $editCoupon['max_discount_amount'] : '0'; ?>">
                 </div>
                 <div>
                     <label class="form-label">Expiry Date</label>
-                    <input type="date" name="expiry_date" class="form-input" required value="<?php echo $editMode ? $editCoupon['expiry_date'] : ''; ?>">
+                    <input type="date" name="expiry_date" class="form-input" required
+                        value="<?php echo $editMode ? $editCoupon['expiry_date'] : ''; ?>">
                 </div>
                 <div style="grid-column: span 3; display: flex; gap: 1rem;">
-                    <button type="submit" name="<?php echo $editMode ? 'update_coupon' : 'create_coupon'; ?>" class="btn-primary" style="width: auto;">
+                    <button type="submit" name="<?php echo $editMode ? 'update_coupon' : 'create_coupon'; ?>"
+                        class="btn-primary" style="width: auto;">
                         <?php echo $editMode ? 'Update Coupon' : 'Create Coupon'; ?>
                     </button>
-                    <?php if($editMode): ?>
-                        <a href="coupons.php" style="padding: 0.75rem; color: var(--text-gray); text-decoration: none;">Cancel</a>
+                    <?php if ($editMode): ?>
+                        <a href="coupons.php"
+                            style="padding: 0.75rem; color: var(--text-gray); text-decoration: none;">Cancel</a>
                     <?php endif; ?>
                 </div>
             </form>
@@ -106,25 +116,31 @@ $coupons = $couponModel->getAll($shop_id);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while($c = $coupons->fetch_assoc()): ?>
-                        <tr>
-                            <td><span style="font-family: monospace; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;"><?php echo htmlspecialchars($c['code']); ?></span></td>
-                            <td>
-                                <?php echo $c['discount_type'] == 'fixed' ? '$'.$c['discount_value'] : $c['discount_value'].'%'; ?>
-                                <?php if($c['discount_type'] == 'percent' && $c['max_discount_amount'] > 0) echo " (Max $".$c['max_discount_amount'].")"; ?>
-                            </td>
-                            <td>$<?php echo $c['min_order_amount']; ?></td>
-                            <td><?php echo $c['expiry_date']; ?></td>
-                            <td>
-                                <?php 
-                                    if(strtotime($c['expiry_date']) < time()) echo "<span style='color: #ef4444'>Expired</span>";
-                                    else echo "<span style='color: #34d399'>Active</span>";
-                                ?>
-                            </td>
-                            <td>
-                                <a href="coupons.php?edit=<?php echo $c['id']; ?>" style="color: var(--primary); text-decoration: none; margin-right: 0.5rem;">Edit</a>
-                            </td>
-                        </tr>
+                        <?php while ($c = $coupons->fetch_assoc()): ?>
+                            <tr>
+                                <td><span
+                                        style="font-family: monospace; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;"><?php echo htmlspecialchars($c['code']); ?></span>
+                                </td>
+                                <td>
+                                    <?php echo $c['discount_type'] == 'fixed' ? '$' . $c['discount_value'] : $c['discount_value'] . '%'; ?>
+                                    <?php if ($c['discount_type'] == 'percent' && $c['max_discount_amount'] > 0)
+                                        echo " (Max ৳" . $c['max_discount_amount'] . ")"; ?>
+                                </td>
+                                <td>৳<?php echo $c['min_order_amount']; ?></td>
+                                <td><?php echo $c['expiry_date']; ?></td>
+                                <td>
+                                    <?php
+                                    if (strtotime($c['expiry_date']) < time())
+                                        echo "<span style='color: #ef4444'>Expired</span>";
+                                    else
+                                        echo "<span style='color: #34d399'>Active</span>";
+                                    ?>
+                                </td>
+                                <td>
+                                    <a href="coupons.php?edit=<?php echo $c['id']; ?>"
+                                        style="color: var(--primary); text-decoration: none; margin-right: 0.5rem;">Edit</a>
+                                </td>
+                            </tr>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
@@ -132,4 +148,5 @@ $coupons = $couponModel->getAll($shop_id);
         </div>
     </div>
 </body>
+
 </html>

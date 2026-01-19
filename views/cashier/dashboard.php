@@ -179,13 +179,13 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
                 <div class="cart-footer">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                         <span>Subtotal</span>
-                        <span id="subTotal">$0.00</span>
+                        <span id="subTotal">৳0.00</span>
                     </div>
 
                     <div
                         style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem;">
                         <span>Total</span>
-                        <span id="grandTotal">$0.00</span>
+                        <span id="grandTotal">৳0.00</span>
                     </div>
 
                     <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem;" id="voucherSection">
@@ -297,7 +297,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
                         div.innerHTML = `
                             ${imgHtml}
                             <div style="font-weight: bold; margin-bottom: 0.25rem;">${prod.name}</div>
-                            <div style="color: var(--primary);">$${prod.sell_price}</div>
+                            <div style="color: var(--primary);">৳${prod.sell_price}</div>
                             <div style="font-size: 0.75rem; color: var(--text-gray); margin-bottom: 0.5rem;">Stock: ${prod.stock_qty}</div>
                             <button class="btn-primary" style="width: 100%; padding: 0.5rem; font-size: 0.9rem;">Add to Cart</button>
                         `;
@@ -376,7 +376,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
                         <div style="font-size: 0.85rem; color: var(--text-gray);">$${item.price} x ${item.qty}</div>
                     </div>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <span style="font-weight: bold;">$${(item.price * item.qty).toFixed(2)}</span>
+                        <span style="font-weight: bold;">৳${(item.price * item.qty).toFixed(2)}</span>
                         <div style="display: flex; gap: 0.25rem;">
                              <button onclick="updateQty(${item.id}, ${item.qty - 1})" style="width: 24px; height: 24px;">-</button>
                              <button onclick="updateQty(${item.id}, ${item.qty + 1})" style="width: 24px; height: 24px;">+</button>
@@ -386,7 +386,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
                 cartItems.appendChild(div);
             });
 
-            document.getElementById('subTotal').innerText = '$' + subtotal.toFixed(2);
+            document.getElementById('subTotal').innerText = '৳' + subtotal.toFixed(2);
 
             let total = subtotal;
             if (discount) {
@@ -399,7 +399,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
                 document.getElementById('appliedVoucher').style.display = 'none';
             }
 
-            document.getElementById('grandTotal').innerText = '$' + Math.max(0, total).toFixed(2);
+            document.getElementById('grandTotal').innerText = '৳' + Math.max(0, total).toFixed(2);
         }
 
         function processCheckout() {
@@ -499,7 +499,7 @@ $brands = $db->query("SELECT * FROM brands WHERE shop_id = ?", [$_SESSION['shop_
                     if (data.success) {
                         discount = data.discount;
                         renderCart();
-                        alert("Voucher Applied: -$" + discount.amount);
+                        alert("Voucher Applied: -৳" + discount.amount);
                     } else {
                         alert(data.message);
                     }
