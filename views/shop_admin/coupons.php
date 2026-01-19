@@ -122,7 +122,7 @@ $coupons = $couponModel->getAll($shop_id);
                                         style="font-family: monospace; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;"><?php echo htmlspecialchars($c['code']); ?></span>
                                 </td>
                                 <td>
-                                    <?php echo $c['discount_type'] == 'fixed' ? '$' . $c['discount_value'] : $c['discount_value'] . '%'; ?>
+                                    <?php echo $c['discount_type'] == 'fixed' ? '৳' . $c['discount_value'] : $c['discount_value'] . '%'; ?>
                                     <?php if ($c['discount_type'] == 'percent' && $c['max_discount_amount'] > 0)
                                         echo " (Max ৳" . $c['max_discount_amount'] . ")"; ?>
                                 </td>
