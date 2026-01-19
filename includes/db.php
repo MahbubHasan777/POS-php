@@ -2,28 +2,30 @@
 require_once __DIR__ . '/functions.php';
 loadEnv(__DIR__ . '/../.env');
 
-class Database {
+class Database
+{
     private $host;
     private $user;
     private $pass;
     private $dbname;
     public $conn;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->host = getenv('DB_HOST') ?: 'localhost';
         $this->user = getenv('DB_USER') ?: 'root';
         $this->pass = getenv('DB_PASS') ?: '';
-        $this->dbname = getenv('DB_NAME') ?: 'pos_db';
+        $this->dbname = getenv('DB_NAME') ?: 'pos';
 
         try {
             $this->conn = new mysqli($this->host, $this->user, $this->pass, $this->dbname);
-            
+
             if ($this->conn->connect_error) {
                 throw new Exception($this->conn->connect_error);
             }
             $this->conn->set_charset("utf8");
-            
-            date_default_timezone_set('Asia/Dhaka'); 
+
+            date_default_timezone_set('Asia/Dhaka');
             $this->conn->query("SET time_zone = '+06:00'");
         } catch (Exception $e) {
             die("<div style='font-family: sans-serif; text-align: center; padding: 50px;'>
@@ -41,7 +43,8 @@ class Database {
         }
     }
 
-    public function reconnect() {
+    public function reconnect()
+    {
         $this->conn->close();
         $this->conn = new mysqli($this->host, $this->user, $this->pass, $this->dbname);
         if ($this->conn->connect_error) {
@@ -50,19 +53,21 @@ class Database {
         $this->conn->set_charset("utf8");
     }
 
-    public function query($sql, $params = [], $types = "") {
+    public function query($sql, $params = [], $types = "")
+    {
         $stmt = $this->conn->prepare($sql);
-        if(!$stmt) {
-             die("Query Error: " . $this->conn->error);
+        if (!$stmt) {
+            die("Query Error: " . $this->conn->error);
         }
         if (!empty($params)) {
-             $stmt->bind_param($types, ...$params);
+            $stmt->bind_param($types, ...$params);
         }
         $stmt->execute();
         return $stmt;
     }
-    
-    public function getLastId() {
+
+    public function getLastId()
+    {
         return $this->conn->insert_id;
     }
 }

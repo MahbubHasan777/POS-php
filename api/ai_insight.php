@@ -77,9 +77,8 @@ if ($httpCode === 200) {
     $insight = $result['candidates'][0]['content']['parts'][0]['text'] ?? "Could not generate insight.";
     echo json_encode(['success' => true, 'insight' => $insight]);
 } else {
-    // Return actual error for debugging
     $error = curl_error($ch);
-    $responseBody = strip_tags($response); // basic security
+    $responseBody = strip_tags($response);
     echo json_encode([
         'success' => false,
         'message' => "Gemini API Failed (HTTP $httpCode). Error: $error. Response: $responseBody"
